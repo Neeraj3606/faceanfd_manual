@@ -1,6 +1,6 @@
 from datetime import datetime, date as date_cls
 
-from sqlalchemy import Column, Integer, String, DateTime, Date, Enum, Text, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Date, Enum, Text, ForeignKey, Boolean, LargeBinary
 from sqlalchemy.sql import func
 from app.db import Base
 
@@ -98,3 +98,17 @@ class Attendance(Base):
     # Check-in and check-out times
     in_time = Column(DateTime, nullable=True)
     out_time = Column(DateTime, nullable=True)
+
+
+# =========================
+# Face Encodings Table
+# =========================
+class FaceEncoding(Base):
+    __tablename__ = "face_encodings"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    student_id = Column(String(50), ForeignKey('students.id', ondelete='CASCADE'), index=True, nullable=False)
+    student_name = Column(String(255), nullable=False, default="")
+    encoding_blob = Column(LargeBinary, nullable=False)  # pickled numpy array
+    created_at = Column(DateTime, server_default=func.current_timestamp(), nullable=False)
+    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now)

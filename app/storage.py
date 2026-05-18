@@ -1,64 +1,120 @@
 """
 Storage layer for Face Attendance Service
 
-Responsibilities:
-✔ create required folders
-✔ load encodings cache
-✔ save encodings cache
-
-NO face recognition logic here
-Only file operations
+Encodings are stored in SQLite DB (face_encodings table) so they
+survive Render restarts and redeploys.
 """
 
 import os
 import pickle
+import logging
 
 from app.config import UPLOADS_DIR, DATA_DIR, ENCODINGS_FILE, MODEL_DIR
 
+logger = logging.getLogger(__name__)
 
-# ==============================
-# Directory setup
-# ==============================
+
 def ensure_dirs():
-    """
-    Ensure required folders exist
-    """
     os.makedirs(UPLOADS_DIR, exist_ok=True)
     os.makedirs(DATA_DIR, exist_ok=True)
     os.makedirs(MODEL_DIR, exist_ok=True)
 
 
-# ==============================
-# Cache Handling
-# ==============================
 def load_cache() -> dict:
     """
-    Load encodings cache from file
-
-    Structure:
-    {
-        "students": {
-            student_id: {
-                "name": str,
-                "encodings": [np.array, ...]
-            }
-        }
-    }
+    Load encodings from DB (persistent across restarts).
+    Falls back to pkl file if DB is empty.
     """
     ensure_dirs()
 
-    if not os.path.exists(ENCODINGS_FILE):
-        return {"students": {}}
+    try:
+        from app.db import SessionLocal
+        from app.models import FaceEncoding
 
-    with open(ENCODINGS_FILE, "rb") as f:
-        return pickle.load(f)
+        db = SessionLocal()
+        try:
+            rows = db.query(FaceEncoding).all()
+            if rows:
+                students = {}
+                for row in rows:
+                    try:
+                        encoding = pickle.loads(row.encoding_blob)
+                        if row.student_id not in students:
+                            students[row.student_id] = {
+                                "name": row.student_name,
+                                "encodings": []
+                            }
+                        students[row.student_id]["encodings"].append(encoding)
+                    except Exception as e:
+                        logger.warning(f"Skipping bad encoding row {row.id}: {e}")
+                        continue
+                logger.info(f"Loaded {len(students)} students from DB")
+                return {"students": students}
+        finally:
+            db.close()
+    except Exception as e:
+        logger.warning(f"DB load failed, falling back to pkl: {e}")
+
+    # Fallback: pkl file
+    if os.path.exists(ENCODINGS_FILE):
+        try:
+            with open(ENCODINGS_FILE, "rb") as f:
+                data = pickle.load(f)
+                logger.info("Loaded encodings from pkl file (fallback)")
+                return data
+        except Exception as e:
+            logger.error(f"pkl load failed: {e}")
+
+    return {"students": {}}
 
 
 def save_cache(cache: dict):
     """
-    Save encodings cache to file
+    Save encodings to DB (persistent across restarts).
     """
     ensure_dirs()
 
-    with open(ENCODINGS_FILE, "wb") as f:
-        pickle.dump(cache, f)
+    students = cache.get("students", {})
+
+    try:
+        from app.db import SessionLocal
+        from app.models import FaceEncoding
+
+        db = SessionLocal()
+        try:
+            db.query(FaceEncoding).delete()
+            db.flush()
+
+            for student_id, data in students.items():
+                name = data.get("name", "")
+                encodings = data.get("encodings", [])
+                for enc in encodings:
+                    try:
+                        blob = pickle.dumps(enc)
+                        row = FaceEncoding(
+                            student_id=str(student_id),
+                            student_name=str(name),
+                            encoding_blob=blob,
+                        )
+                        db.add(row)
+                    except Exception as e:
+                        logger.warning(f"Skipping encoding for {student_id}: {e}")
+                        continue
+
+            db.commit()
+            logger.info(f"Saved {len(students)} students to DB")
+        except Exception as e:
+            db.rollback()
+            logger.error(f"DB save failed: {e}")
+            raise
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"DB save error: {e}")
+
+    # pkl backup (local dev only)
+    try:
+        with open(ENCODINGS_FILE, "wb") as f:
+            pickle.dump(cache, f)
+    except Exception:
+        pass
