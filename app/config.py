@@ -139,8 +139,8 @@ LIVENESS_SCALES = [float(s) for s in os.getenv("MINIFASNET_SCALES", "1.5,2.0,2.5
 # ✅ Server (NETWORK ACCESS)
 # ==============================
 
-HOST = "0.0.0.0"   # ✅ changed from 127.0.0.1 (allows other systems to access)
-PORT = 8000
+HOST = os.getenv("HOST", "0.0.0.0")
+PORT = int(os.getenv("PORT", 8000))
 
 
 # ==============================
