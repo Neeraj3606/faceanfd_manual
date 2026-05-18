@@ -96,6 +96,19 @@ def _run_migrations():
             except Exception:
                 pass  # Column already exists — ignore
 
+        # Create face_encodings table explicitly
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS face_encodings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student_id VARCHAR(50) NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                student_name VARCHAR(255) NOT NULL DEFAULT '',
+                encoding_blob BLOB NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME
+            )
+        """))
+        conn.commit()
+
         # Backfill roles/scopes for older databases.
         conn.execute(text("UPDATE users SET role='SUPER_ADMIN' WHERE is_super_admin=1"))
         conn.execute(text("UPDATE users SET role='ADMIN' WHERE is_super_admin=0 AND is_admin=1"))
