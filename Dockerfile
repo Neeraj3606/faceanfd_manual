@@ -27,6 +27,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy the entire project
 COPY . .
 
+# Download the required ONNX face recognition and liveness models
+RUN python download_model.py
+
 # Create necessary directories and set permissions so non-root users (Render) can write to SQLite
 RUN mkdir -p uploads/students data && \
     chmod -R 777 uploads data
