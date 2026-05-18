@@ -110,7 +110,10 @@ def main():
         print(f"📦 {model['name']}  [{model['license']}]")
         ok = download_model(model)
         if not ok:
-            all_ok = False
+            if "minifasnet" in model["filename"].lower():
+                print("  ⚠️ Anti-spoofing model failed. Liveness will be disabled, but build will continue.")
+            else:
+                all_ok = False
         print()
 
     print("─" * 54)
