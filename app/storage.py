@@ -46,24 +46,24 @@ def load_cache() -> dict:
                             }
                         students[row.student_id]["encodings"].append(encoding)
                     except Exception as e:
-                        logger.warning(f"Skipping bad encoding row {row.id}: {e}")
+                        print(f"Skipping bad encoding row {row.id}: {e}")
                         continue
-                logger.info(f"Loaded {len(students)} students from DB")
+                print(f"Loaded {len(students)} students from DB")
                 return {"students": students}
         finally:
             db.close()
     except Exception as e:
-        logger.warning(f"DB load failed, falling back to pkl: {e}")
+        print(f"DB load failed, falling back to pkl: {e}")
 
     # Fallback: pkl file
     if os.path.exists(ENCODINGS_FILE):
         try:
             with open(ENCODINGS_FILE, "rb") as f:
                 data = pickle.load(f)
-                logger.info("Loaded encodings from pkl file (fallback)")
+                print("Loaded encodings from pkl file (fallback)")
                 return data
         except Exception as e:
-            logger.error(f"pkl load failed: {e}")
+            print(f"pkl load failed: {e}")
 
     return {"students": {}}
 
@@ -98,19 +98,21 @@ def save_cache(cache: dict):
                         )
                         db.add(row)
                     except Exception as e:
-                        logger.warning(f"Skipping encoding for {student_id}: {e}")
+                        print(f"Skipping encoding for {student_id}: {e}")
                         continue
 
             db.commit()
-            logger.info(f"Saved {len(students)} students to DB")
+            print(f"Saved {len(students)} students to DB")
         except Exception as e:
             db.rollback()
-            logger.error(f"DB save failed: {e}")
+            print(f"SAVE ERROR (DB flush/commit failed): {e}")
             raise
         finally:
             db.close()
     except Exception as e:
-        logger.error(f"DB save error: {e}")
+        import traceback
+        print(f"SAVE ERROR (General): {e}")
+        traceback.print_exc()
 
     # pkl backup (local dev only)
     try:
