@@ -472,14 +472,7 @@ async def enroll(
         if not roll:
             roll = student.roll or ""
 
-    # Save to cache (encodings)
-    cache = load_cache()
-    cache["model"] = FACE_MODEL_TAG
-    cache.setdefault("students", {})
-    cache["students"][internal_sid] = {"name": name, "encodings": encodings}
-    save_cache(cache)
-
-    # Save/Update DB roster
+    # Save/Update DB roster first to avoid Foreign Key violations in save_cache
     if student:
         student.name = name
         student.school_name = effective_school
@@ -500,6 +493,13 @@ async def enroll(
             )
         )
     db.commit()
+
+    # Save to cache (encodings) AFTER student is in DB
+    cache = load_cache()
+    cache["model"] = FACE_MODEL_TAG
+    cache.setdefault("students", {})
+    cache["students"][internal_sid] = {"name": name, "encodings": encodings}
+    save_cache(cache)
 
     msg = "Student photos updated successfully." if student else "Enrollment successful."
     return {"ok": True, "message": msg}
