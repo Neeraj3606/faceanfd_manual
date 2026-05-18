@@ -1,0 +1,15 @@
+[Unit]
+Description=Face Attendance System
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/face_attendance_updated
+Environment="PATH=/opt/face_attendance_updated/.venv311/bin"
+ExecStart=/opt/face_attendance_updated/.venv311/bin/python main.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment (IMPORTANT - 900MB!)
+.venv/
+.venv311/
+venv/
+ENV/
+env/
+
+# ML Models (IMPORTANT - 600MB!)
+data/models/
+*.onnx
+*.zip
+*.pth
+*.pt
+*.h5
+*.pb
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+data/attendance.db
+
+# Encodings
+data/encodings.pkl
+*.pkl
+
+# User Uploads
+uploads/
+data/matplotlib/
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Excel exports
+*.xlsx
+*.xls
+
+# Test files
+test_*.py
+debug_*.py
+verify_*.py

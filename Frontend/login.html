@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1121" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png" />
+  <title>Login — Face Attendance</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      background:
+        radial-gradient(900px 600px at 10% 10%, rgba(110,168,255,.2), transparent 60%),
+        radial-gradient(700px 500px at 90% 80%, rgba(124,92,255,.18), transparent 55%),
+        #070d1a;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 48px 40px 40px;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.5);
+    }
+    .logo { font-size: 52px; text-align: center; margin-bottom: 8px; }
+    h1 {
+      text-align: center; font-size: 26px; font-weight: 800;
+      background: linear-gradient(135deg, #6ea8ff, #7c5cff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 4px;
+    }
+    .subtitle { text-align: center; color: #7a90b8; font-size: 13px; margin-bottom: 32px; }
+    .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 18px; display: none; }
+    .alert.show { display: block; }
+    .alert.error   { background: rgba(255,107,107,.15); border: 1px solid rgba(255,107,107,.3); color: #ff9090; }
+    .alert.success { background: rgba(48,209,88,.15);   border: 1px solid rgba(48,209,88,.3);   color: #60e87a; }
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; font-size: 12px; font-weight: 600; color: #7a90b8;
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px;
+    }
+    .field input {
+      width: 100%; padding: 14px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; color: #eaf0ff;
+      font-size: 15px; font-family: inherit; outline: none; transition: border-color .2s;
+    }
+    .field input:focus { border-color: #6ea8ff; }
+    .field input::placeholder { color: #4a5a78; }
+    .passWrap { position: relative; }
+    .passWrap input { padding-right: 46px; }
+    .eyeBtn {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: #4a5a78; font-size: 18px;
+      cursor: pointer; padding: 2px; line-height: 1;
+    }
+    .eyeBtn:hover { color: #eaf0ff; }
+    .btnLogin {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #6ea8ff, #7c5cff);
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: opacity .2s, transform .15s; margin-top: 4px;
+    }
+    .btnLogin:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+    .btnLogin:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
+      border-radius: 50%; animation: spin .7s linear infinite;
+      vertical-align: middle; margin-left: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .footer { margin-top: 24px; text-align: center; font-size: 12px; color: #4a5a78; }
+    .footer a { color: #6ea8ff; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">&#127891;</div>
+  <h1>Face Attendance</h1>
+  <p class="subtitle">Sign in to access your dashboard</p>
+
+  <div class="alert error"   id="errMsg"></div>
+  <div class="alert success" id="okMsg"></div>
+
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="username" placeholder="Enter your email" autocomplete="email" />
+  </div>
+
+  <div class="field">
+    <label>Password</label>
+    <div class="passWrap">
+      <input type="password" id="password" placeholder="Enter your password"
+             autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') doLogin()" />
+      <button type="button" class="eyeBtn" onclick="toggleEye()" id="eyeBtn">&#128065;&#65039;</button>
+    </div>
+  </div>
+
+  <button class="btnLogin" id="loginBtn" onclick="doLogin()">Sign In</button>
+
+  <div class="footer">
+    <a href="#" onclick="setupFirstAdmin(event)">First time? Create super admin account</a>
+  </div>
+</div>
+
+<script>
+  const API = window.location.origin;
+
+  // Already logged in? redirect immediately
+  (function(){
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.is_super_admin) {
+        window.location.href = '/static/super_admin.html';
+      } else if ((user.role || '').toUpperCase() === 'ADMIN') {
+        window.location.href = '/static/admin_dashboard.html';
+      } else if ((user.role || '').toUpperCase() === 'TEACHER') {
+        window.location.href = '/static/teacher.html';
+      } else {
+        window.location.href = (user.dashboard_url || '/static/login.html');
+      }
+    } catch(e) { localStorage.clear(); }
+  })();
+
+  function toggleEye() {
+    const inp = document.getElementById('password');
+    const btn = document.getElementById('eyeBtn');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? String.fromCodePoint(0x1F441,0xFE0F) : String.fromCodePoint(0x1F648);
+  }
+
+  function showErr(msg) {
+    const e = document.getElementById('errMsg');
+    e.innerHTML = (typeof msg === 'string') ? msg : JSON.stringify(msg); e.classList.add('show');
+    document.getElementById('okMsg').classList.remove('show');
+  }
+
+  function showOk(msg) {
+    const e = document.getElementById('okMsg');
+    e.innerHTML = msg; e.classList.add('show');
+    document.getElementById('errMsg').classList.remove('show');
+  }
+
+  // Helper to safely parse FastAPI error detail
+  function parseDetail(detail) {
+    if (!detail) return null;
+    if (typeof detail === 'string') return detail;
+    if (Array.isArray(detail)) return detail.map(d => d.msg || JSON.stringify(d)).join(', ');
+    if (typeof detail === 'object') return detail.msg || JSON.stringify(detail);
+    return String(detail);
+  }
+
+  async function doLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('loginBtn');
+
+    document.getElementById('errMsg').classList.remove('show');
+    document.getElementById('okMsg').classList.remove('show');
+
+    if (!username || !password) { showErr('Please enter email and password.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username)) { showErr('Please enter a valid email address.'); return; }
+    if (password.length < 8) { showErr('Password must be at least 8 characters.'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = 'Signing in… <span class="spinner"></span>';
+
+    try {
+      const fd = new FormData();
+      fd.append('username', username);
+      fd.append('password', password);
+
+      const res  = await fetch(API + '/auth/login', { method: 'POST', body: fd });
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('user',  JSON.stringify(data.user));
+
+        showOk('Login successful! Redirecting…');
+
+        setTimeout(() => {
+          window.location.href = (data.user && data.user.dashboard_url) || '/static/teacher.html';
+        }, 500);
+      } else {
+        // FIXED: parseDetail handles string, array, or object from FastAPI
+        showErr(parseDetail(data.detail) || 'Invalid email or password.');
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    } catch(e) {
+      showErr('Network error — is the server running?');
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  }
+
+  async function setupFirstAdmin(e) {
+    e.preventDefault();
+    document.getElementById('errMsg').classList.remove('show');
+    document.getElementById('okMsg').classList.remove('show');
+    try {
+      const res  = await fetch(API + '/auth/setup-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'username=superadmin%40faceattend.local&password=superadmin123'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showOk('&#9989; Super Admin created!<br>Username: <b>' + data.username + '</b><br>Password: <b>' + data.password + '</b><br><small>Login with these credentials.</small>');
+        document.getElementById('username').value = data.username;
+        document.getElementById('password').value = data.password;
+      } else {
+        // FIXED: parseDetail handles string, array, or object from FastAPI
+        showErr(parseDetail(data.detail) || 'Setup failed — admin may already exist.');
+      }
+    } catch(e) {
+      showErr('Network error — is the server running?');
+    }
+  }
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log('SW registered:', reg.scope))
+        .catch(err => console.log('SW registration failed:', err));
+    });
+  }
+</script>
+</body>
+</html>

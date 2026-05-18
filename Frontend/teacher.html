@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#1a56db" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)"/>
+<meta name="description" content="Face Attendance Pro - Teacher Portal"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="FaceAtt"/>
+<link rel="apple-touch-icon" href="/static/icons/icon-192x192.png"/>
+<title>Face Attendance Pro — Teacher Portal</title>
+<link rel="manifest" href="/static/manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--blue-50:#eff6ff;--blue-100:#dbeafe;--blue-200:#bfdbfe;--blue-400:#60a5fa;--blue-500:#3b82f6;--blue-600:#1a56db;--blue-700:#1e40af;--blue-800:#1e3a8a;--blue-900:#1e2d64;
+--violet-500:#8b5cf6;--violet-600:#7c3aed;--violet-700:#6d28d9;
+--green-100:#dcfce7;--green-600:#16a34a;--green-700:#15803d;
+--amber-100:#fef3c7;--amber-600:#d97706;--amber-700:#b45309;
+--red-100:#fee2e2;--red-600:#dc2626;--red-700:#b91c1c;
+--cyan-500:#06b6d4;--cyan-600:#0891b2;
+--bg:#f0f4fc;--surface:#fff;--surface2:#f8faff;--surface3:#f0f4fc;
+--text:#0f172a;--text2:#475569;--text3:#94a3b8;
+--border:rgba(30,40,120,0.1);--border2:rgba(30,40,120,0.18);
+--radius:10px;--radius-lg:16px;--radius-xl:22px;
+--shadow:0 1px 3px rgba(26,86,219,0.08),0 4px 16px rgba(26,86,219,0.06);
+--shadow-md:0 4px 24px rgba(26,86,219,0.12),0 1px 4px rgba(0,0,0,0.04);
+--shadow-glow:0 0 0 3px rgba(26,86,219,0.15);
+--gradient:linear-gradient(135deg,#1a56db 0%,#7c3aed 100%);
+--gradient2:linear-gradient(135deg,#1e40af 0%,#1a56db 60%,#06b6d4 100%);
+--transition:all 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+/* ── DARK MODE OVERRIDES ── */
+[data-dark]{
+  --bg:#0f172a;--surface:#1e293b;--surface2:#263248;--surface3:#1a2540;
+  --text:#f1f5f9;--text2:#cbd5e1;--text3:#94a3b8;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --blue-50:rgba(26,86,219,0.15);--blue-100:rgba(26,86,219,0.2);--blue-200:rgba(96,165,250,0.25);
+  --green-100:rgba(22,163,74,0.18);--green-700:#4ade80;
+  --amber-100:rgba(217,119,6,0.18);--amber-700:#fbbf24;
+  --red-100:rgba(220,38,38,0.18);--red-700:#f87171;
+}
+[data-dark] body{background:#0f172a;color:#f1f5f9;}
+[data-dark] .nav-btn{color:#94a3b8;}
+[data-dark] .nav-btn:hover{background:rgba(26,86,219,0.15);color:#60a5fa;}
+[data-dark] .nav-btn.active{background:rgba(26,86,219,0.18);color:#60a5fa;}
+[data-dark] .stat-lbl{color:#94a3b8;}
+[data-dark] .badge.gray{background:rgba(255,255,255,0.08);color:#94a3b8;}
+[data-dark] .form-input,[data-dark] .form-select{background:#1a2540;border-color:rgba(255,255,255,0.1);color:#f1f5f9;}
+[data-dark] .form-input::placeholder{color:#64748b;}
+[data-dark] thead th{background:#1a2540;color:#94a3b8;}
+[data-dark] tbody td{color:#e2e8f0;}
+[data-dark] tbody tr:hover td{background:rgba(26,86,219,0.1);}
+[data-dark] .result-box.success{background:rgba(22,163,74,0.15);border-color:rgba(74,222,128,0.4);}
+[data-dark] .result-box.success .result-text,[data-dark] .result-box.success .result-detail{color:#4ade80;}
+[data-dark] .result-box.error{background:rgba(220,38,38,0.15);border-color:rgba(248,113,113,0.4);}
+[data-dark] .result-box.error .result-text,[data-dark] .result-box.error .result-detail{color:#f87171;}
+[data-dark] .tip-item{background:#1a2540;border-color:rgba(255,255,255,0.08);}
+[data-dark] .tip-item strong{color:#f1f5f9;}
+[data-dark] .tip-item p{color:#94a3b8;}
+[data-dark] .logout-btn{border-color:rgba(255,255,255,0.1);color:#94a3b8;}
+[data-dark] .logout-btn:hover{background:rgba(220,38,38,0.15);color:#f87171;border-color:rgba(220,38,38,0.4);}
+[data-dark] .report-card{background:#1e293b;border-color:rgba(255,255,255,0.08);}
+[data-dark] .report-title{color:#f1f5f9;}
+[data-dark] .report-sub{color:#94a3b8;}
+[data-dark] .mode-btn{color:#94a3b8;}
+[data-dark] .att-btn.p{background:#1a2540;border-color:rgba(255,255,255,0.1);color:#94a3b8;}
+[data-dark] .att-btn.l{background:#1a2540;border-color:rgba(255,255,255,0.1);color:#94a3b8;}
+[data-dark] .att-btn.a{background:#1a2540;border-color:rgba(255,255,255,0.1);color:#94a3b8;}
+[data-dark] .student-row{background:#1a2540;border-color:rgba(255,255,255,0.08);}
+[data-dark] .student-row:hover{background:rgba(26,86,219,0.12);border-color:rgba(96,165,250,0.3);}
+[data-dark] .student-name{color:#f1f5f9;}
+[data-dark] .student-meta{color:#94a3b8;}
+[data-dark] .theme-label{color:#cbd5e1;}
+[data-dark] .toggle{background:rgba(255,255,255,0.15);}
+[data-dark] .scan-name{color:#f1f5f9;}
+[data-dark] .scan-id,[data-dark] .scan-time{color:#94a3b8;}
+[data-dark] .scan-item{border-color:rgba(255,255,255,0.08);}
+[data-dark] .toast{background:#1e293b;border-color:rgba(255,255,255,0.1);color:#f1f5f9;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;font-size:14px;}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;}
+.sidebar-top{padding:20px 16px 16px;border-bottom:1px solid var(--border);}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.brand-icon{width:38px;height:38px;background:var(--gradient);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0;box-shadow:0 4px 12px rgba(26,86,219,0.3);}
+.brand-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--text);line-height:1.1;}
+.brand-sub{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;}
+.user-card{background:var(--gradient);border-radius:var(--radius-lg);padding:14px;color:#fff;position:relative;overflow:hidden;}
+.user-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.08);border-radius:50%;}
+.user-card::after{content:'';position:absolute;bottom:-15px;left:-10px;width:60px;height:60px;background:rgba(255,255,255,0.06);border-radius:50%;}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;font-family:'Space Grotesk',sans-serif;border:2px solid rgba(255,255,255,0.3);margin-bottom:8px;}
+.user-name{font-weight:600;font-size:13px;color:#fff;}
+.user-role{font-size:10px;color:rgba(255,255,255,0.8);margin-top:2px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:20px;font-family:'JetBrains Mono',monospace;}
+.sidebar-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;}
+.nav-group{margin-bottom:12px;}
+.nav-label{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);font-weight:600;padding:0 8px;margin-bottom:4px;font-family:'JetBrains Mono',monospace;}
+.nav-btn{width:100%;background:none;border:none;padding:9px 12px;border-radius:var(--radius);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:10px;transition:var(--transition);font-family:'DM Sans',sans-serif;text-align:left;position:relative;}
+.nav-btn:hover{background:var(--blue-50);color:var(--blue-600);}
+.nav-btn.active{background:linear-gradient(135deg,rgba(26,86,219,0.1),rgba(124,58,237,0.08));color:var(--blue-600);font-weight:600;}
+.nav-btn.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;background:var(--gradient);border-radius:0 3px 3px 0;}
+.nav-icon{width:18px;text-align:center;font-size:13px;}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);}
+.theme-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;margin-bottom:8px;}
+.theme-label{font-size:12px;color:var(--text2);font-weight:500;}
+.toggle{width:36px;height:20px;background:var(--border2);border-radius:10px;position:relative;cursor:pointer;transition:var(--transition);}
+.toggle.on{background:var(--gradient);}
+.toggle-knob{width:14px;height:14px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:var(--transition);box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.toggle.on .toggle-knob{left:19px;}
+.logout-btn{width:100%;background:none;border:1px solid var(--border);color:var(--text2);padding:8px;border-radius:var(--radius);font-size:12px;cursor:pointer;transition:var(--transition);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;}
+.logout-btn:hover{background:var(--red-100);color:var(--red-600);border-color:var(--red-600);}
+
+/* MAIN */
+.main{display:flex;flex-direction:column;min-width:0;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-left h2{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+.topbar-left p{font-size:12px;color:var(--text3);margin-top:1px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.topbar-chip{background:var(--gradient);color:#fff;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;font-family:'JetBrains Mono',monospace;}
+.topbar-date{font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+.hamburger{display:none;background:none;border:1px solid var(--border);color:var(--text2);width:36px;height:36px;border-radius:var(--radius);cursor:pointer;align-items:center;justify-content:center;}
+
+/* HERO BANNER */
+.page-hero{background:var(--gradient2);border-radius:var(--radius-xl);padding:22px 28px;margin:20px 20px 0;color:#fff;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;}
+.page-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:rgba(255,255,255,0.06);border-radius:50%;}
+.page-hero::after{content:'';position:absolute;bottom:-60px;right:80px;width:140px;height:140px;background:rgba(255,255,255,0.04);border-radius:50%;}
+.hero-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:4px;}
+.hero-sub{font-size:13px;color:rgba(255,255,255,0.8);}
+.hero-badge{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+
+/* CONTENT */
+.content{padding:20px;flex:1;}
+.section{display:none;}
+.section.active{display:block;animation:fadeUp 0.25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:var(--transition);}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.stat-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
+.stat-accent.blue{background:var(--gradient);}
+.stat-accent.green{background:linear-gradient(90deg,var(--green-600),#34d399);}
+.stat-accent.amber{background:linear-gradient(90deg,var(--amber-600),#fb923c);}
+.stat-accent.red{background:linear-gradient(90deg,var(--red-600),#f87171);}
+.stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.stat-icon{width:38px;height:38px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:16px;}
+.stat-icon.blue{background:var(--blue-50);color:var(--blue-600);}
+.stat-icon.green{background:var(--green-100);color:var(--green-600);}
+.stat-icon.amber{background:var(--amber-100);color:var(--amber-600);}
+.stat-icon.red{background:var(--red-100);color:var(--red-600);}
+.stat-pct{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:12px;}
+.stat-pct.up{background:var(--green-100);color:var(--green-700);}
+.stat-pct.down{background:var(--red-100);color:var(--red-700);}
+.stat-pct.warn{background:var(--amber-100);color:var(--amber-700);}
+.stat-val{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--text);line-height:1;}
+.stat-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-top:5px;font-weight:600;}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden;transition:var(--transition);}
+.card:hover{border-color:var(--border2);}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.card-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;}
+.card-title i{color:var(--blue-600);font-size:13px;}
+.card-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.card-body{padding:18px;}
+.card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+/* LIVE DOT */
+.live{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--green-600);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;font-family:'JetBrains Mono',monospace;}
+.live-dot{width:7px;height:7px;background:var(--green-600);border-radius:50%;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.3)}}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--surface2);padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);font-weight:400;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--surface2);}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;font-family:'JetBrains Mono',monospace;}
+.badge.present{background:var(--green-100);color:var(--green-700);}
+.badge.late{background:var(--amber-100);color:var(--amber-700);}
+.badge.absent{background:var(--red-100);color:var(--red-700);}
+.badge.info{background:var(--blue-50);color:var(--blue-700);}
+.badge.gray{background:var(--surface2);color:var(--text3);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:'DM Sans',sans-serif;transition:var(--transition);white-space:nowrap;min-height:34px;}
+.btn:hover{background:var(--surface2);border-color:var(--border2);}
+.btn.primary{background:var(--gradient);color:#fff;border:none;box-shadow:0 4px 12px rgba(26,86,219,0.25);}
+.btn.primary:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 6px 16px rgba(26,86,219,0.3);}
+.btn.success{background:linear-gradient(135deg,var(--green-600),#059669);color:#fff;border:none;}
+.btn.danger{background:var(--red-600);color:#fff;border:none;}
+.btn.sm{padding:5px 11px;font-size:11px;min-height:28px;}
+.btn:disabled{opacity:0.55;cursor:not-allowed;pointer-events:none;}
+.btn i{font-size:11px;}
+
+/* FORMS */
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.form-group:last-child{margin-bottom:0;}
+label.form-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;font-family:'JetBrains Mono',monospace;}
+.form-input,.form-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--radius);font-size:13px;font-family:'DM Sans',sans-serif;width:100%;transition:var(--transition);}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--blue-500);box-shadow:var(--shadow-glow);background:var(--surface);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-row.thirds{grid-template-columns:1fr 1fr 1fr;}
+
+/* CAMERA */
+.cam-box{background:#000;border-radius:var(--radius-lg);overflow:hidden;aspect-ratio:16/9;border:1px solid var(--border);position:relative;}
+.cam-box video{width:100%;height:100%;object-fit:cover;display:block;}
+.cam-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,0.4);}
+.cam-placeholder i{font-size:36px;margin-bottom:8px;}
+
+/* ATTENDANCE MANUAL */
+.student-list{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow-y:auto;}
+.student-row{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;transition:var(--transition);}
+.student-row:hover{border-color:var(--blue-200);background:var(--blue-50);}
+.student-name{font-weight:600;font-size:14px;color:var(--text);}
+.student-meta{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+.att-btns{display:flex;gap:6px;}
+.att-btn{padding:6px 12px;border-radius:var(--radius);font-size:10px;font-weight:700;cursor:pointer;border:1px solid;font-family:'JetBrains Mono',monospace;text-transform:uppercase;transition:var(--transition);}
+.att-btn.p{background:var(--surface);border-color:var(--border);color:var(--text3);}
+.att-btn.p.active{background:var(--green-100);border-color:var(--green-600);color:var(--green-700);}
+.att-btn.l{background:var(--surface);border-color:var(--border);color:var(--text3);}
+.att-btn.l.active{background:var(--amber-100);border-color:var(--amber-600);color:var(--amber-700);}
+.att-btn.a{background:var(--surface);border-color:var(--border);color:var(--text3);}
+.att-btn.a.active{background:var(--red-100);border-color:var(--red-600);color:var(--red-700);}
+
+/* REPORTS */
+.reports-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.report-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow);transition:var(--transition);}
+.report-card:hover{box-shadow:var(--shadow-md);border-color:var(--blue-200);}
+.report-icon{width:44px;height:44px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px;background:var(--gradient);color:#fff;box-shadow:0 4px 12px rgba(26,86,219,0.2);}
+.report-title{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.report-sub{font-size:12px;color:var(--text3);margin-bottom:14px;}
+.download-btn{width:100%;justify-content:center;}
+
+/* ENROLL TIPS */
+.tips-list{display:flex;flex-direction:column;gap:10px;}
+.tip-item{display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);}
+.tip-icon{width:32px;height:32px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+
+/* PROGRESS */
+.progress{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;margin:8px 0;}
+.progress-fill{height:100%;background:var(--gradient);border-radius:3px;transition:width 0.3s ease;}
+
+/* CAPTURE GRID */
+.capture-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;margin-top:14px;}
+.cap-item{aspect-ratio:1;border-radius:var(--radius);overflow:hidden;border:2px solid var(--border);position:relative;}
+.cap-item img{width:100%;height:100%;object-fit:cover;}
+.cap-del{position:absolute;top:3px;right:3px;width:18px;height:18px;background:var(--red-600);color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;}
+
+/* RECENT SCANS */
+.scan-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);}
+.scan-item:last-child{border-bottom:none;}
+.scan-name{font-weight:600;font-size:13px;color:var(--text);}
+.scan-id{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+.scan-time{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:2px;text-align:right;}
+
+/* RESULT BOX */
+.result-box{padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;gap:10px;margin-top:12px;}
+.result-box.success{background:var(--green-100);border-color:var(--green-600);}
+.result-box.error{background:var(--red-100);border-color:var(--red-600);}
+.result-text{font-weight:600;font-size:13px;color:var(--text);}
+.result-detail{font-size:11px;color:var(--text3);margin-top:2px;}
+
+/* SPINNER */
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue-500);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+#toast-wrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;max-width:320px;pointer-events:auto;animation:toastIn 0.25s ease;}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast i{font-size:15px;}
+.toast.success{border-left:3px solid var(--green-600);}
+.toast.success i{color:var(--green-600);}
+.toast.danger{border-left:3px solid var(--red-600);}
+.toast.danger i{color:var(--red-600);}
+.toast.warning{border-left:3px solid var(--amber-600);}
+.toast.warning i{color:var(--amber-600);}
+.toast.info{border-left:3px solid var(--blue-500);}
+.toast.info i{color:var(--blue-500);}
+
+/* MODE SELECTOR */
+.mode-sel{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:3px;}
+.mode-btn{padding:7px 14px;border-radius:7px;border:none;background:none;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);}
+.mode-btn.active{background:var(--gradient);color:#fff;box-shadow:0 2px 8px rgba(26,86,219,0.25);}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:40px 20px;color:var(--text3);}
+.empty i{font-size:32px;margin-bottom:12px;opacity:0.5;display:block;}
+.empty p{font-size:13px;}
+
+/* OVERLAY & MOBILE */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:998;}
+.overlay.open{display:block;}
+@media(max-width:1024px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{position:fixed;top:0;left:-280px;width:280px;z-index:999;height:100vh;transition:var(--transition);}
+  .sidebar.open{left:0;}
+  .topbar{padding:10px 16px;}
+  .hamburger{display:flex;}
+  .page-hero{margin:12px 12px 0;padding:16px 18px;}
+  .content{padding:12px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .reports-grid{grid-template-columns:1fr;}
+  .form-row,.form-row.thirds{grid-template-columns:1fr;}
+  /* Fix face attendance section 2-col layout on tablet */
+  #faceSection > div, #enrollSection > div{grid-template-columns:1fr !important;}
+}
+@media(max-width:600px){
+  body{font-size:13px;}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .hero-badge{display:none;}
+  .att-btns{flex-wrap:wrap;}
+  .stat-val{font-size:22px;}
+  .card-head{flex-wrap:wrap;gap:8px;}
+  .card-actions{flex-wrap:wrap;gap:6px;}
+  .cam-box{aspect-ratio:4/3;}
+  /* Bottom safe area for iPhone notch */
+  .sidebar-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom));}
+  #toast-wrap{bottom:calc(16px + env(safe-area-inset-bottom));right:12px;left:12px;}
+  .toast{max-width:100%;}
+  .btn{min-height:40px;padding:9px 14px;}
+  .topbar{padding-top:calc(10px + env(safe-area-inset-top));}
+}
+canvas{display:none;}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-top">
+    <div class="brand">
+      <div class="brand-icon"><i class="fas fa-graduation-cap"></i></div>
+      <div>
+        <div class="brand-name">Face Attendance</div>
+        <div class="brand-sub">Teacher Portal</div>
+      </div>
+    </div>
+    <div class="user-card">
+      <div class="user-avatar" id="userAvatar">T</div>
+      <div class="user-name" id="userName">Teacher Name</div>
+      <div class="user-role" id="userRole">Class — Section</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <button class="nav-btn active" data-tab="dashboard" onclick="goTab('dashboard')">
+        <i class="nav-icon fas fa-th-large"></i><span>Dashboard</span>
+      </button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Students</div>
+      <button class="nav-btn" data-tab="enroll" onclick="goTab('enroll')">
+        <i class="nav-icon fas fa-user-plus"></i><span>Add Student</span>
+      </button>
+      <button class="nav-btn" data-tab="manage" onclick="goTab('manage')">
+        <i class="nav-icon fas fa-users-gear"></i><span>Manage Students</span>
+      </button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Attendance</div>
+      <button class="nav-btn" data-tab="face" onclick="goTab('face')">
+        <i class="nav-icon fas fa-camera"></i><span>Face Attendance</span>
+      </button>
+      <button class="nav-btn" data-tab="manual" onclick="goTab('manual')">
+        <i class="nav-icon fas fa-list-check"></i><span>Manual Attendance</span>
+      </button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Reports</div>
+      <button class="nav-btn" data-tab="reports" onclick="goTab('reports')">
+        <i class="nav-icon fas fa-file-export"></i><span>Reports & Export</span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="theme-row">
+      <span class="theme-label"><i class="fas fa-moon" style="margin-right:6px;font-size:11px;"></i>Dark Mode</span>
+      <div class="toggle" id="themeToggle" onclick="toggleTheme()"><div class="toggle-knob"></div></div>
+    </div>
+    <button class="logout-btn" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Logout</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="hamburger" onclick="openSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="topbar-left">
+        <h2 id="topTitle">Dashboard</h2>
+        <p id="topSub">Overview and class attendance</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-date" id="todayDate"></span>
+      <span class="topbar-chip" id="topChip">Dashboard</span>
+    </div>
+  </div>
+
+  <!-- HERO BANNER -->
+  <div class="page-hero">
+    <div>
+      <div class="hero-title" id="heroTitle">Good Morning, Teacher 👋</div>
+      <div class="hero-sub" id="heroSub">Manage attendance and track your students today</div>
+    </div>
+    <div class="hero-badge" id="heroChip">Today's Session</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- DASHBOARD SECTION -->
+    <div class="section active" id="dashboardSection">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-accent blue"></div>
+          <div class="stat-header">
+            <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+            <span class="stat-pct up" id="totalTrend">Total</span>
+          </div>
+          <div class="stat-val" id="statTotal">—</div>
+          <div class="stat-lbl">Total Students</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-accent green"></div>
+          <div class="stat-header">
+            <div class="stat-icon green"><i class="fas fa-circle-check"></i></div>
+            <span class="stat-pct up" id="statPresentPct">0%</span>
+          </div>
+          <div class="stat-val" id="statPresent">—</div>
+          <div class="stat-lbl">Present Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-accent amber"></div>
+          <div class="stat-header">
+            <div class="stat-icon amber"><i class="fas fa-clock"></i></div>
+            <span class="stat-pct warn" id="statLatePct">0%</span>
+          </div>
+          <div class="stat-val" id="statLate">—</div>
+          <div class="stat-lbl">Late Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-accent red"></div>
+          <div class="stat-header">
+            <div class="stat-icon red"><i class="fas fa-circle-xmark"></i></div>
+            <span class="stat-pct down" id="statAbsentPct">0%</span>
+          </div>
+          <div class="stat-val" id="statAbsent">—</div>
+          <div class="stat-lbl">Absent Today</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title"><i class="fas fa-table-list"></i>Today's Attendance</div>
+            <div class="card-sub">Real-time class attendance records</div>
+          </div>
+          <div class="card-actions">
+            <div class="live"><div class="live-dot"></div>Live</div>
+            <button class="btn sm" onclick="loadDashboard()"><i class="fas fa-rotate"></i> Refresh</button>
+            <button class="btn sm primary" onclick="goTab('face')"><i class="fas fa-camera"></i> Start Camera</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Student ID</th><th>Name</th><th>Roll</th><th>Status</th><th>Time In</th><th>Time Out</th></tr>
+            </thead>
+            <tbody id="dashTable">
+              <tr><td colspan="6"><div class="empty"><i class="fas fa-calendar-check"></i><p>No attendance records yet today</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD STUDENT SECTION -->
+    <div class="section" id="enrollSection">
+      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start;">
+        <div class="card" style="margin:0;">
+          <div class="card-head">
+            <div>
+              <div class="card-title"><i class="fas fa-user-plus"></i>Student Information</div>
+              <div class="card-sub">Enter details and capture face photos</div>
+            </div>
+
+          </div>
+          <div class="card-body">
+            <form id="enrollForm" onsubmit="submitEnroll(event)">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Student ID</label>
+                  <input class="form-input" id="eId" placeholder="e.g. STU001" required/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input class="form-input" id="eName" placeholder="e.g. Arjun Sharma" required/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">School</label>
+                <input class="form-input" id="eSchool" placeholder="Auto-filled from account" readonly style="background:var(--surface2);color:var(--text3);"/>
+              </div>
+              <div class="form-row thirds">
+                <div class="form-group">
+                  <label class="form-label">Class</label>
+                  <input class="form-input" id="eClass" placeholder="Auto-filled" readonly/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Section</label>
+                  <input class="form-input" id="eSection" placeholder="Auto-filled" readonly/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Roll No.</label>
+                  <input class="form-input" id="eRoll" placeholder="e.g. 23"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Upload Photos</label>
+                <input type="file" class="form-input" id="eFiles" multiple accept="image/*"/>
+              </div>
+
+              <!-- WEBCAM -->
+              <div style="border:1px dashed var(--blue-200);border-radius:var(--radius-lg);padding:18px;background:var(--blue-50);text-align:center;margin-bottom:14px;">
+                <i class="fas fa-camera" style="font-size:28px;color:var(--blue-500);margin-bottom:8px;display:block;"></i>
+                <p style="font-size:13px;color:var(--text2);margin-bottom:14px;font-weight:500;">Webcam Capture for Better Recognition</p>
+                <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                  <button type="button" class="btn primary" onclick="toggleWebcam()" id="wcToggle"><i class="fas fa-video"></i> Start Camera</button>
+                  <button type="button" class="btn" onclick="switchFacing()"><i class="fas fa-arrows-rotate"></i> Flip</button>
+                </div>
+                <div id="wcWrap" style="display:none;margin-top:14px;">
+                  <div class="cam-box" style="margin-bottom:10px;"><video id="wcVideo" autoplay playsinline muted></video></div>
+                  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;">
+                    <button type="button" class="btn success" onclick="capturePhoto()"><i class="fas fa-camera"></i> Capture</button>
+                    <button type="button" class="btn danger" onclick="stopWebcam()"><i class="fas fa-stop"></i> Stop</button>
+                  </div>
+                  <div id="capProgress" style="display:none;">
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;">
+                      <span>Photos Captured</span><span id="capCount">0/15</span>
+                    </div>
+                    <div class="progress"><div class="progress-fill" id="capFill" style="width:0%"></div></div>
+                  </div>
+                  <div class="capture-grid" id="capGrid"></div>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px;">
+                <button type="submit" class="btn success" style="flex:1;justify-content:center;"><i class="fas fa-user-plus"></i> Enroll Student</button>
+                <button type="button" class="btn" onclick="resetEnroll()"><i class="fas fa-rotate-left"></i> Reset</button>
+              </div>
+            </form>
+            <div id="enrollResult" style="display:none;margin-top:14px;"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin:0;">
+          <div class="card-head">
+            <div class="card-title"><i class="fas fa-lightbulb"></i>Best Practices</div>
+          </div>
+          <div class="card-body">
+            <div class="tips-list">
+              <div class="tip-item">
+                <div class="tip-icon" style="background:var(--green-100);color:var(--green-600);"><i class="fas fa-user"></i></div>
+                <div><strong style="font-size:13px;">Single Face</strong><p style="font-size:12px;color:var(--text3);margin-top:2px;">One face per photo for accuracy</p></div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-icon" style="background:var(--amber-100);color:var(--amber-600);"><i class="fas fa-sun"></i></div>
+                <div><strong style="font-size:13px;">Good Lighting</strong><p style="font-size:12px;color:var(--text3);margin-top:2px;">Well-lit environment preferred</p></div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-icon" style="background:var(--blue-50);color:var(--blue-600);"><i class="fas fa-images"></i></div>
+                <div><strong style="font-size:13px;">Multiple Angles</strong><p style="font-size:12px;color:var(--text3);margin-top:2px;">Front, left, right views</p></div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-icon" style="background:var(--red-100);color:var(--red-600);"><i class="fas fa-ban"></i></div>
+                <div><strong style="font-size:13px;">No Obstructions</strong><p style="font-size:12px;color:var(--text3);margin-top:2px;">No sunglasses, hats, or masks</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANAGE STUDENTS SECTION -->
+    <div class="section" id="manageSection">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title"><i class="fas fa-users-gear"></i>Manage Students</div>
+            <div class="card-sub">View all students in your class and delete if needed</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn sm" onclick="loadManageStudents()"><i class="fas fa-rotate"></i> Refresh</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Student ID</th><th>Name</th><th>Class</th><th>Section</th><th>Roll</th><th>Action</th></tr>
+            </thead>
+            <tbody id="manageTable">
+              <tr><td colspan="6"><div class="empty"><i class="fas fa-users"></i><p>No students found</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FACE ATTENDANCE SECTION -->
+    <div class="section" id="faceSection">
+      <div style="display:grid;grid-template-columns:1.3fr 0.7fr;gap:18px;align-items:start;">
+        <div class="card" style="margin:0;">
+          <div class="card-head">
+            <div>
+              <div class="card-title"><i class="fas fa-camera"></i>Camera Feed</div>
+              <div class="card-sub">Position face clearly in view</div>
+            </div>
+            <div class="mode-sel">
+              <button class="mode-btn active" id="modeIn" onclick="setMode('in')"><i class="fas fa-sign-in-alt"></i> Check In</button>
+              <button class="mode-btn" id="modeOut" onclick="setMode('out')"><i class="fas fa-sign-out-alt"></i> Check Out</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="form-group" style="margin-bottom:14px;">
+              <label class="form-label">Manual Select (Optional)</label>
+              <select class="form-select" id="faceStudentSel">
+                <option value="">Auto-detect via face recognition</option>
+              </select>
+            </div>
+            <div class="cam-box" id="faceCamBox">
+              <video id="faceVideo" autoplay playsinline muted></video>
+              <div class="cam-placeholder" id="facePlaceholder">
+                <i class="fas fa-video-slash"></i>
+                <span style="font-size:12px;">Camera not started</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+              <button class="btn primary" style="flex:1;justify-content:center;" onclick="captureAttendance()" id="capAttBtn">
+                <i class="fas fa-camera"></i> <span id="capAttTxt">Capture & Check In</span>
+              </button>
+              <button class="btn" onclick="startFaceCam()"><i class="fas fa-play"></i> Start</button>
+              <button class="btn" onclick="switchFacing()"><i class="fas fa-arrows-rotate"></i></button>
+              <button class="btn" onclick="stopFaceCam()"><i class="fas fa-stop"></i> Stop</button>
+            </div>
+            <div id="faceResult" style="display:none;margin-top:10px;"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin:0;">
+          <div class="card-head">
+            <div class="card-title"><i class="fas fa-clock-rotate-left"></i>Recent Scans</div>
+          </div>
+          <div class="card-body" style="padding:14px 18px;max-height:450px;overflow-y:auto;">
+            <div id="recentScans">
+              <div class="empty"><i class="fas fa-history"></i><p>No scans today</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANUAL ATTENDANCE SECTION -->
+    <div class="section" id="manualSection">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title"><i class="fas fa-list-check"></i>Manual Attendance</div>
+            <div class="card-sub">Mark Present / Late / Absent for each student</div>
+          </div>
+          <div class="card-actions">
+            <input type="date" class="form-input" id="manDate" style="width:160px;"/>
+            <button class="btn" onclick="loadManual()"><i class="fas fa-rotate"></i> Load</button>
+            <button class="btn primary" onclick="markAllPresent()"><i class="fas fa-check-double"></i> All Present</button>
+            <button class="btn success" onclick="saveManual()"><i class="fas fa-save"></i> Save</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="manList">
+            <div class="empty"><i class="fas fa-calendar-days"></i><p>Select a date and click Load to begin</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS SECTION -->
+    <div class="section" id="reportsSection">
+      <div class="reports-grid">
+        <!-- TODAY -->
+        <div class="report-card">
+          <div class="report-icon"><i class="fas fa-calendar-day"></i></div>
+          <div class="report-title">Today's Report</div>
+          <div class="report-sub">Download today's class attendance</div>
+          <button class="btn primary download-btn" onclick="downloadReport('today')">
+            <i class="fas fa-download"></i> Download
+          </button>
+        </div>
+        <!-- WEEKLY -->
+        <div class="report-card">
+          <div class="report-icon" style="background:linear-gradient(135deg,var(--violet-600),var(--blue-500));"><i class="fas fa-calendar-week"></i></div>
+          <div class="report-title">Weekly Report</div>
+          <div class="report-sub">Date range report for your class</div>
+          <div class="form-row" style="margin-bottom:12px;">
+            <div class="form-group">
+              <label class="form-label">From</label>
+              <input type="date" class="form-input" id="weekFrom"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">To</label>
+              <input type="date" class="form-input" id="weekTo"/>
+            </div>
+          </div>
+          <button class="btn primary download-btn" onclick="downloadReport('weekly')">
+            <i class="fas fa-download"></i> Download
+          </button>
+        </div>
+        <!-- MONTHLY -->
+        <div class="report-card">
+          <div class="report-icon" style="background:linear-gradient(135deg,var(--cyan-600),var(--green-600));"><i class="fas fa-calendar-alt"></i></div>
+          <div class="report-title">Monthly Summary</div>
+          <div class="report-sub">Full month attendance for your class</div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label class="form-label">Select Month</label>
+            <input type="month" class="form-input" id="repMonth"/>
+          </div>
+          <button class="btn primary download-btn" onclick="downloadReport('monthly')">
+            <i class="fas fa-download"></i> Download
+          </button>
+        </div>
+        <!-- YEARLY -->
+        <div class="report-card">
+          <div class="report-icon" style="background:linear-gradient(135deg,var(--amber-600),var(--red-600));"><i class="fas fa-chart-line"></i></div>
+          <div class="report-title">Yearly Report</div>
+          <div class="report-sub">Full year attendance summary</div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label class="form-label">Select Year</label>
+            <select class="form-select" id="repYear"></select>
+          </div>
+          <button class="btn primary download-btn" onclick="downloadReport('yearly')">
+            <i class="fas fa-download"></i> Download
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+</div><!-- /app -->
+
+<canvas id="snapCanvas"></canvas>
+<div id="toast-wrap"></div>
+
+<script>
+const API = window.location.origin;
+let token = localStorage.getItem('token') || '';
+let state = {
+  user: null,
+  students: [],
+  mode: 'in',
+  wcStream: null,
+  faceStream: null,
+  photos: [],
+  manData: {},
+  facingMode: localStorage.getItem('facingMode') || 'user'
+};
+
+const MAX_PHOTOS = 15;
+const MIN_PHOTOS = 5;
+
+function isCameraAllowedOrigin() {
+  if (window.isSecureContext) return true;
+  const h = window.location.hostname;
+  return window.location.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1');
+}
+
+function fixInsecureHostForCamera() {
+  if (window.location.hostname !== '0.0.0.0') return false;
+  const next = `${window.location.protocol}//localhost${window.location.port ? ':' + window.location.port : ''}${window.location.pathname}${window.location.search}${window.location.hash}`;
+  window.location.replace(next);
+  return true;
+}
+
+/* ---- INIT ---- */
+document.addEventListener('DOMContentLoaded', () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.update()));
+  }
+  if (window.caches) {
+    caches.keys().then((keys) => {
+      keys
+        .filter((k) => k.startsWith('face-attendance-') && k !== 'face-attendance-v10')
+        .forEach((k) => caches.delete(k));
+    });
+  }
+  if (fixInsecureHostForCamera()) return;
+  if (!token) { window.location.href = 'login.html'; return; }
+  setToday();
+  initDates();
+  loadUser().then(() => {
+    loadDashboard();
+    setInterval(() => {
+      if (document.getElementById('dashboardSection').classList.contains('active')) loadDashboard();
+    }, 30000);
+  }).catch((e) => {
+    toast('Session expired. Please login again.','warning');
+    console.error('loadUser failed:', e);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setTimeout(()=>{ window.location.href = 'login.html'; }, 400);
+  });
+  checkDark();
+});
+
+function setToday() {
+  const d = new Date();
+  const iso = toISO(d);
+  document.getElementById('todayDate').textContent = d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('manDate').value = iso;
+  const greet = d.getHours() < 12 ? 'Good Morning' : d.getHours() < 17 ? 'Good Afternoon' : 'Good Evening';
+  document.getElementById('heroTitle').textContent = `${greet}, Teacher 👋`;
+}
+
+function toISO(d = new Date()) {
+  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+}
+
+function initDates() {
+  const today = new Date();
+  const iso = toISO(today);
+  const mon = iso.slice(0,7);
+  document.getElementById('repMonth').value = mon;
+  const weekStart = new Date(today); weekStart.setDate(today.getDate()-today.getDay());
+  const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate()+6);
+  document.getElementById('weekFrom').value = toISO(weekStart);
+  document.getElementById('weekTo').value = toISO(weekEnd);
+  const sel = document.getElementById('repYear');
+  const yr = today.getFullYear();
+  for(let y=yr;y>=yr-5;y--){
+    const o=document.createElement('option'); o.value=y; o.textContent=y;
+    sel.appendChild(o);
+  }
+}
+
+/* ---- API ---- */
+async function api(method, path, body=null) {
+  const opts = {
+    method, headers: {'Content-Type':'application/json', ...(token?{Authorization:`Bearer ${token}`}:{})}
+  };
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch(API+path, opts);
+  if(res.status===204) return {};
+  const ct = res.headers.get('content-type')||'';
+  if(!res.ok) {
+    const err = ct.includes('json') ? await res.json() : {};
+    throw new Error(err.detail||err.message||`HTTP ${res.status}`);
+  }
+  if(ct.includes('json')) {
+    const payload = await res.json();
+    if(payload && payload.ok === false) {
+      throw new Error(payload.detail || payload.message || 'Request failed');
+    }
+    return payload;
+  }
+  return res.text();
+}
+
+async function apiForm(method, path, fd) {
+  const res = await fetch(API+path, {
+    method, headers: {Authorization:`Bearer ${token}`}, body: fd
+  });
+  const payload = await res.json().catch(()=>({}));
+  if(!res.ok || payload?.ok === false) { throw new Error(payload?.detail || payload?.message || `HTTP ${res.status}`); }
+  return payload;
+}
+
+function asList(payload, key='records') {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload[key])) return payload[key];
+  return [];
+}
+
+/* ---- USER ---- */
+async function loadUser() {
+  state.user = await api('GET','/auth/me');
+  const role = String(state.user.role || '').toUpperCase();
+  if(role!=='TEACHER') throw new Error('Not a teacher');
+  const name = state.user.full_name||state.user.name||'Teacher';
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userAvatar').textContent = name[0].toUpperCase();
+  const school = (state.user.school_name || '').trim();
+  const cls = state.user.class_assigned ? `Class ${state.user.class_assigned}${state.user.section_assigned?' — '+state.user.section_assigned:''}` : 'All Classes';
+  document.getElementById('userRole').textContent = school ? `${school} • ${cls}` : cls;
+  document.getElementById('heroTitle').textContent = document.getElementById('heroTitle').textContent.replace('Teacher', name);
+  if (school) document.getElementById('heroSub').textContent = `School: ${school} · Manage attendance and track your students today`;
+  // Auto-fill enrollment form with teacher's school, class, and section
+  document.getElementById('eSchool').value = school || 'MainSchool';
+  document.getElementById('eClass').value = state.user.class_assigned||'';
+  document.getElementById('eSection').value = state.user.section_assigned||'';
+}
+
+/* ---- DEMO ---- */
+function loadDemoData() {
+  const students = [
+    {id:'STU001',name:'Riya Sharma',roll:'1',class_name:'10',section:'A'},
+    {id:'STU002',name:'Arjun Patel',roll:'2',class_name:'10',section:'A'},
+    {id:'STU003',name:'Priya Singh',roll:'3',class_name:'10',section:'A'},
+    {id:'STU004',name:'Rohit Kumar',roll:'4',class_name:'10',section:'A'},
+    {id:'STU005',name:'Anjali Mehta',roll:'5',class_name:'10',section:'A'},
+  ];
+  const att = [
+    {student_id:'STU001',status:'P',in_time:'08:32',out_time:null},
+    {student_id:'STU002',status:'L',in_time:'09:15',out_time:null},
+    {student_id:'STU003',status:'A',in_time:null,out_time:null},
+    {student_id:'STU004',status:'P',in_time:'08:28',out_time:'14:45'},
+  ];
+  state.students = students;
+  renderDash(students, att);
+  populateFaceSel(students);
+}
+
+/* ---- DASHBOARD ---- */
+async function loadDashboard() {
+  try {
+    const studentsRes = await api('GET','/students');
+    let students = asList(studentsRes, 'students');
+    state.students = students;
+
+    const today = toISO();
+    let live=[],manual=[];
+    try{ live = asList(await api('GET','/attendance/today')); }catch(_){}
+    try{ manual = asList(await api('GET',`/attendance/by-date?date=${today}`)); }catch(_){}
+
+    const ids = new Set(students.map(s=>s.id));
+    const map = new Map();
+    live.filter(a=>ids.has(a.student_id)).forEach(a=>map.set(a.student_id,a));
+    manual.filter(a=>ids.has(a.student_id)).forEach(a=>map.set(a.student_id,a));
+    renderDash(students, Array.from(map.values()));
+    populateFaceSel(students);
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function renderDash(students, att) {
+  const total = students.length;
+  const present = att.filter(a=>a.status==='P').length;
+  const late = att.filter(a=>a.status==='L').length;
+  const absent = att.filter(a=>a.status==='A').length;
+  const pct = n => total>0 ? Math.round(n/total*100)+'%' : '0%';
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statPresent').textContent = present+late;
+  document.getElementById('statLate').textContent = late;
+  document.getElementById('statAbsent').textContent = absent;
+  document.getElementById('statPresentPct').textContent = pct(present+late);
+  document.getElementById('statLatePct').textContent = pct(late);
+  document.getElementById('statAbsentPct').textContent = pct(absent);
+
+  const sMap = {};
+  students.forEach(s=>sMap[s.id]=s);
+
+  const sorted = [...att].sort((a,b)=>{
+    const na=(sMap[a.student_id]?.name||'').toLowerCase();
+    const nb=(sMap[b.student_id]?.name||'').toLowerCase();
+    return na.localeCompare(nb);
+  });
+
+  const tbody = document.getElementById('dashTable');
+  if(!sorted.length) {
+    tbody.innerHTML='<tr><td colspan="6"><div class="empty"><i class="fas fa-calendar-check"></i><p>No attendance records for today</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = sorted.map(a=>{
+    const s = sMap[a.student_id]||{};
+    return `<tr>
+      <td><span class="badge gray" style="font-family:'JetBrains Mono',monospace;">${a.student_id}</span></td>
+      <td><strong>${s.name||'Unknown'}</strong></td>
+      <td>${s.roll||'—'}</td>
+      <td>${statusBadge(a.status)}</td>
+      <td>${fmtTime(a.in_time)}</td>
+      <td>${fmtTime(a.out_time)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ---- FACE ATTENDANCE ---- */
+async function startFaceCam() {
+  if (fixInsecureHostForCamera()) return;
+  if(!isCameraAllowedOrigin()) { toast('Camera blocked: use https:// or http://localhost','warning'); return; }
+  try {
+    if(state.faceStream) { state.faceStream.getTracks().forEach(t=>t.stop()); }
+    state.faceStream = await getCam();
+    const vid = document.getElementById('faceVideo');
+    vid.srcObject = state.faceStream;
+    document.getElementById('facePlaceholder').style.display='none';
+    toast('Camera started','success');
+  } catch(e) {
+    toast('Camera error: '+e.message,'danger');
+  }
+}
+
+function stopFaceCam() {
+  if(state.faceStream) { state.faceStream.getTracks().forEach(t=>t.stop()); state.faceStream=null; }
+  document.getElementById('faceVideo').srcObject=null;
+  document.getElementById('facePlaceholder').style.display='flex';
+}
+
+function setMode(m) {
+  state.mode = m;
+  document.getElementById('modeIn').classList.toggle('active', m==='in');
+  document.getElementById('modeOut').classList.toggle('active', m==='out');
+  document.getElementById('capAttTxt').textContent = m==='in' ? 'Capture & Check In' : 'Capture & Check Out';
+}
+
+async function captureAttendance() {
+  if(!state.faceStream) { toast('Start camera first','warning'); return; }
+  const vid = document.getElementById('faceVideo');
+  const canvas = document.getElementById('snapCanvas');
+  canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+  canvas.getContext('2d').drawImage(vid,0,0);
+  const blob = await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.85));
+  if(!blob) { toast('Capture failed','danger'); return; }
+
+  showFaceResult('loading','Processing...','Analyzing face...');
+  try {
+    const fd = new FormData();
+    fd.append('file',blob,'att.jpg');
+    fd.append('mode',state.mode);
+    const sid = document.getElementById('faceStudentSel').value;
+    if(sid) fd.append('student_id',sid);
+    const result = await apiForm('POST','/attendance/mark',fd);
+    const action = state.mode==='in'?'Checked In':'Checked Out';
+    const who = result.name || result.student_name || result.student_id || 'Attendance updated';
+    const when = fmtTime(result.in_time || result.out_time || result.time || new Date().toISOString());
+    showFaceResult('success', who, `${action} at ${when}`);
+    // 🔊 Speak the announcement
+    const actionSound = state.mode === 'in' ? 'IN' : 'OUT';
+    speak(`${who}, ${actionSound} attendance marked.`);
+    loadRecentScans();
+    loadDashboard();
+  } catch(e) {
+    showFaceResult('error','Failed', e.message||'Could not mark attendance');
+  }
+}
+
+function showFaceResult(type,title,detail) {
+  const box = document.getElementById('faceResult');
+  box.style.display='block';
+  const icons = {loading:'<div class="spinner"></div>',success:'<i class="fas fa-circle-check" style="color:var(--green-600);font-size:18px;"></i>',error:'<i class="fas fa-circle-xmark" style="color:var(--red-600);font-size:18px;"></i>'};
+  const classes = {loading:'',success:'success',error:'error'};
+  box.className = 'result-box '+classes[type];
+  box.innerHTML = `${icons[type]}<div><div class="result-text">${title}</div><div class="result-detail">${detail}</div></div>`;
+  if(type!=='loading') setTimeout(()=>box.style.display='none',5000);
+}
+
+async function populateFaceSel(students) {
+  const sel = document.getElementById('faceStudentSel');
+  sel.innerHTML = '<option value="">Auto-detect via face recognition</option>' +
+    students.map(s=>`<option value="${s.id}">${s.name} (${s.id})</option>`).join('');
+}
+
+async function loadRecentScans() {
+  try {
+    const today = toISO();
+    let att=[],manual=[];
+    try{att=asList(await api('GET','/attendance/today'));}catch(_){}
+    try{manual=asList(await api('GET',`/attendance/by-date?date=${today}`));}catch(_){}
+    const map=new Map();
+    att.forEach(a=>map.set(a.student_id,a));
+    manual.forEach(a=>map.set(a.student_id,a));
+    const sMap={};
+    state.students.forEach(s=>sMap[s.id]=s);
+    const ids=new Set(state.students.map(s=>s.id));
+    const recs=[...map.values()].filter(a=>ids.has(a.student_id)).slice(-10).reverse();
+    const box=document.getElementById('recentScans');
+    if(!recs.length){box.innerHTML='<div class="empty"><i class="fas fa-history"></i><p>No scans today</p></div>';return;}
+    box.innerHTML=recs.map(a=>{
+      const s=sMap[a.student_id]||{};
+      return `<div class="scan-item">
+        <div><div class="scan-name">${s.name||'Unknown'}</div><div class="scan-id">${a.student_id}</div></div>
+        <div style="text-align:right;">${statusBadge(a.status)}<div class="scan-time">${fmtTime(a.in_time||a.out_time)}</div></div>
+      </div>`;
+    }).join('');
+  } catch(e){}
+}
+
+/* ---- MANUAL ATTENDANCE ---- */
+async function loadManual() {
+  const date = document.getElementById('manDate').value;
+  if(!date) { toast('Select a date','warning'); return; }
+  const box = document.getElementById('manList');
+  box.innerHTML='<div class="empty"><div class="spinner" style="margin:0 auto;"></div></div>';
+  try {
+    let students = state.students.length ? state.students : asList(await api('GET','/students'),'students');
+    state.students = students;
+
+    let existing=[];
+    try{existing=asList(await api('GET',`/attendance/by-date?date=${date}`));}catch(_){}
+    const ids=new Set(students.map(s=>s.id));
+    const attMap={};
+    existing.filter(r=>ids.has(r.student_id)).forEach(r=>attMap[r.student_id]=r.status);
+    state.manData={...attMap};
+
+    if(!students.length){box.innerHTML='<div class="empty"><i class="fas fa-users"></i><p>No students in your class</p></div>';return;}
+    box.innerHTML='<div class="student-list">'+students.map(s=>{
+      const st=attMap[s.id]||'';
+      return `<div class="student-row" data-id="${s.id}">
+        <div>
+          <div class="student-name">${s.name}</div>
+          <div class="student-meta">ID: ${s.id} | Roll: ${s.roll||'—'}</div>
+        </div>
+        <div class="att-btns">
+          <button class="att-btn p ${st==='P'?'active':''}" onclick="setAtt('${s.id}','P',this)">Present</button>
+          <button class="att-btn l ${st==='L'?'active':''}" onclick="setAtt('${s.id}','L',this)">Late</button>
+          <button class="att-btn a ${st==='A'?'active':''}" onclick="setAtt('${s.id}','A',this)">Absent</button>
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+  } catch(e) {
+    box.innerHTML='<div class="empty" style="color:var(--red-600);"><i class="fas fa-triangle-exclamation"></i><p>'+e.message+'</p></div>';
+    toast('Failed to load: '+e.message,'danger');
+  }
+}
+
+async function setAtt(id, status, btn) {
+  state.manData[id] = status;
+  const row = btn.closest('.student-row');
+  row.querySelectorAll('.att-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const date = document.getElementById('manDate').value;
+  try {
+    const fd = new FormData();
+    fd.append('student_id', id);
+    fd.append('status', status);
+    fd.append('date', date);
+    fd.append('remark', 'Manual attendance');
+    await apiForm('POST','/attendance/manual',fd);
+  } catch(e) { toast('Save error: '+e.message,'danger'); }
+}
+
+async function saveManual() {
+  const date = document.getElementById('manDate').value;
+  if(!date) { toast('Select a date','warning'); return; }
+  const records = Object.entries(state.manData)
+    .filter(([,s])=>['P','L','A'].includes(s))
+    .map(([id,status])=>({student_id:id,status,date}));
+  if(!records.length) { toast('No attendance to save','warning'); return; }
+  try {
+    const r = await api('POST','/attendance/bulk',records);
+    toast(`Saved ${r?.updated_count||records.length} records`,'success');
+    loadDashboard();
+  } catch(e) { toast('Save failed: '+e.message,'danger'); }
+}
+
+async function markAllPresent() {
+  const rows = document.querySelectorAll('#manList .student-row');
+  if(!rows.length) { toast('Load students first','warning'); return; }
+  rows.forEach(row=>{
+    const id=row.dataset.id;
+    state.manData[id]='P';
+    row.querySelectorAll('.att-btn').forEach(b=>b.classList.remove('active'));
+    row.querySelector('.att-btn.p').classList.add('active');
+  });
+  await saveManual();
+}
+
+/* ---- ENROLLMENT ---- */
+async function submitEnroll(e) {
+  e.preventDefault();
+  const id=document.getElementById('eId').value.trim();
+  const name=document.getElementById('eName').value.trim();
+  const cls=document.getElementById('eClass').value.trim();
+  const sec=document.getElementById('eSection').value.trim();
+  const roll=document.getElementById('eRoll').value.trim();
+  const files=document.getElementById('eFiles').files;
+  const total=files.length+state.photos.length;
+  if(total<MIN_PHOTOS){toast(`Min ${MIN_PHOTOS} photos required`,'warning');return;}
+  showEnrollResult('loading','Enrolling...','Uploading and training...');
+  try{
+    const fd=new FormData();
+    fd.append('student_id',id);
+    fd.append('name',name);
+    fd.append('class_name',cls);
+    fd.append('section',sec);
+    fd.append('roll',roll);
+    fd.append('replace_photos','true');
+    // School name is automatically set by backend based on teacher's school
+    // No need to send school_name - backend will use teacher's school_name
+    for(let i=0;i<files.length;i++) fd.append('files',files[i]);
+    state.photos.forEach((b,i)=>fd.append('files',b,`cap${i}.jpg`));
+    const res=await fetch(API+'/enroll',{method:'POST',headers:{Authorization:'Bearer '+token},body:fd});
+    const d=await res.json();
+    if(!res.ok||d.ok===false) throw new Error(d.detail||'Enrollment failed');
+    showEnrollResult('success','Enrolled Successfully',`${name} has been enrolled with face recognition.`);
+    setTimeout(()=>{resetEnroll();loadDashboard();},2000);
+  }catch(e){
+    showEnrollResult('error','Enrollment Failed',e.message);
+  }
+}
+
+/* ---- MANAGE STUDENTS ---- */
+async function loadManageStudents() {
+  const tbody = document.getElementById('manageTable');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="spinner" style="margin:0 auto;"></div></div></td></tr>';
+  try {
+    const studentsRes = await api('GET','/students');
+    const students = asList(studentsRes, 'students');
+    state.students = students;
+    if(!students.length) {
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><i class="fas fa-users"></i><p>No students in your class</p></div></td></tr>';
+      return;
+    }
+    const sorted = [...students].sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    tbody.innerHTML = sorted.map(s => `<tr>
+      <td><span class="badge gray" style="font-family:'JetBrains Mono',monospace;">${s.id}</span></td>
+      <td><strong>${s.name||'—'}</strong></td>
+      <td>${s.class_name||'—'}</td>
+      <td>${s.section||'—'}</td>
+      <td>${s.roll||'—'}</td>
+      <td><button class="btn sm danger" onclick="deleteStudentFromManage('${String(s.id).replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i> Delete</button></td>
+    </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty" style="color:var(--red-600);"><i class="fas fa-triangle-exclamation"></i><p>${e.message||'Failed to load students'}</p></div></td></tr>`;
+  }
+}
+
+async function deleteStudentFromManage(studentId) {
+  if(!studentId) return;
+  const ok = window.confirm(`Delete student ${studentId}? This will also remove attendance records.`);
+  if(!ok) return;
+  try {
+    await api('DELETE', `/student/delete/${encodeURIComponent(studentId)}`);
+    toast('Student deleted successfully','success');
+    await loadManageStudents();
+    await loadDashboard();
+  } catch(e) {
+    toast(e.message || 'Delete failed','danger');
+  }
+}
+
+function showEnrollResult(type,title,msg){
+  const box=document.getElementById('enrollResult');
+  box.style.display='block';
+  const icons={loading:'<div class="spinner"></div>',success:'<i class="fas fa-circle-check" style="color:var(--green-600);font-size:32px;"></i>',error:'<i class="fas fa-circle-xmark" style="color:var(--red-600);font-size:32px;"></i>'};
+  const cls={loading:'',success:'success',error:'error'};
+  box.className='result-box '+cls[type];
+  box.innerHTML=`${icons[type]}<div><div class="result-text" style="font-size:14px;">${title}</div><div class="result-detail">${msg}</div></div>`;
+}
+
+function resetEnroll() {
+  document.getElementById('enrollForm').reset();
+  // Auto-fill teacher's class and section again after reset
+  document.getElementById('eSchool').value=(state.user?.school_name||'MainSchool');
+  document.getElementById('eClass').value=state.user?.class_assigned||'';
+  document.getElementById('eSection').value=state.user?.section_assigned||'';
+  state.photos=[];
+  document.getElementById('capGrid').innerHTML='';
+  document.getElementById('capProgress').style.display='none';
+  document.getElementById('enrollResult').style.display='none';
+  stopWebcam();
+}
+
+/* ---- WEBCAM ---- */
+async function toggleWebcam(){
+  if(state.wcStream){stopWebcam();return;}
+  if (fixInsecureHostForCamera()) return;
+  if(!isCameraAllowedOrigin()){toast('Camera blocked: use https:// or http://localhost','warning');return;}
+  try{
+    state.wcStream=await getCam();
+    document.getElementById('wcVideo').srcObject=state.wcStream;
+    document.getElementById('wcWrap').style.display='block';
+    document.getElementById('wcToggle').innerHTML='<i class="fas fa-video-slash"></i> Stop Camera';
+    document.getElementById('wcToggle').className='btn danger';
+    document.getElementById('capProgress').style.display='block';
+    updateCapProg();
+  }catch(e){toast('Camera error: '+e.message,'danger');}
+}
+
+function stopWebcam(){
+  if(state.wcStream){state.wcStream.getTracks().forEach(t=>t.stop());state.wcStream=null;}
+  document.getElementById('wcWrap').style.display='none';
+  document.getElementById('wcToggle').innerHTML='<i class="fas fa-video"></i> Start Camera';
+  document.getElementById('wcToggle').className='btn primary';
+}
+
+async function capturePhoto(){
+  if(!state.wcStream){toast('Start camera first','warning');return;}
+  if(state.photos.length>=MAX_PHOTOS){toast('Max 15 photos reached','warning');return;}
+  const vid=document.getElementById('wcVideo');
+  const c=document.getElementById('snapCanvas');
+  c.width=vid.videoWidth;c.height=vid.videoHeight;
+  c.getContext('2d').drawImage(vid,0,0);
+  const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.85));
+  if(blob){state.photos.push(blob);updateCapProg();renderCapGrid();toast(`Photo ${state.photos.length} captured`,'success');}
+}
+
+function updateCapProg(){
+  const n=state.photos.length;
+  document.getElementById('capCount').textContent=`${n}/${MAX_PHOTOS}`;
+  document.getElementById('capFill').style.width=(n/MAX_PHOTOS*100)+'%';
+}
+
+function renderCapGrid(){
+  document.getElementById('capGrid').innerHTML=state.photos.map((b,i)=>{
+    const url=URL.createObjectURL(b);
+    return `<div class="cap-item"><img src="${url}"/><button class="cap-del" onclick="delPhoto(${i})"><i class="fas fa-times"></i></button></div>`;
+  }).join('');
+}
+
+function delPhoto(i){state.photos.splice(i,1);updateCapProg();renderCapGrid();}
+
+async function getCam(){
+  if(!navigator.mediaDevices?.getUserMedia) throw new Error('Camera API not available');
+  try{
+    return await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},facingMode:{ideal:state.facingMode}},audio:false});
+  }catch(_){
+    return await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+  }
+}
+
+function switchFacing(){
+  state.facingMode = state.facingMode==='environment'?'user':'environment';
+  localStorage.setItem('facingMode',state.facingMode);
+  const hadWc=!!state.wcStream, hadFace=!!state.faceStream;
+  if(hadWc){stopWebcam();toggleWebcam();}
+  if(hadFace){stopFaceCam();startFaceCam();}
+  toast(state.facingMode==='environment'?'Back camera':'Front camera','info');
+}
+
+/* ---- REPORTS ---- */
+async function downloadReport(kind) {
+  const today = toISO();
+  let path='', name='Report.xlsx';
+  const cls = state.user?.class_assigned||'';
+  try {
+    if(kind==='today'){
+      path=`/attendance/export/excel?start_date=${today}&end_date=${today}`;
+      name=`Daily_${cls}_${today}.xlsx`;
+    } else if(kind==='weekly'){
+      const f=document.getElementById('weekFrom').value;
+      const t=document.getElementById('weekTo').value;
+      if(!f||!t){toast('Select date range','warning');return;}
+      path=`/attendance/export/excel?start_date=${f}&end_date=${t}`;
+      name=`Weekly_${cls}_${f}_${t}.xlsx`;
+    } else if(kind==='monthly'){
+      const m=document.getElementById('repMonth').value;
+      if(!m){toast('Select a month','warning');return;}
+      const [y,mo]=m.split('-');
+      const last=new Date(y,mo,0).getDate();
+      path=`/attendance/export/summary?start_date=${m}-01&end_date=${m}-${last}`;
+      name=`Monthly_${cls}_${m}.xlsx`;
+    } else if(kind==='yearly'){
+      const yr=document.getElementById('repYear').value;
+      path=`/attendance/export/summary?start_date=${yr}-01-01&end_date=${yr}-12-31`;
+      name=`Yearly_${cls}_${yr}.xlsx`;
+    }
+    toast('Preparing download...','info');
+    const res=await fetch(API+path,{headers:{...(token?{Authorization:`Bearer ${token}`}:{})}});
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.detail||`HTTP ${res.status}`);}
+    const blob=await res.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+    URL.revokeObjectURL(url);
+    toast('Report downloaded','success');
+  } catch(e) {
+    toast(e.message||'Download failed','danger');
+  }
+}
+
+/* ---- NAV ---- */
+const tabMeta = {
+  dashboard:{title:'Dashboard',sub:'Overview and class attendance',chip:'Dashboard'},
+  enroll:{title:'Add Student',sub:'Enroll new students with face data',chip:'Enrollment'},
+  manage:{title:'Manage Students',sub:'View and delete students from your class',chip:'Students'},
+  face:{title:'Face Attendance',sub:'Live face recognition attendance',chip:'Live'},
+  manual:{title:'Manual Attendance',sub:'Mark attendance for each student',chip:'Manual'},
+  reports:{title:'Reports & Export',sub:'Download attendance reports',chip:'Reports'}
+};
+
+function goTab(tab){
+  if(tab!=='face') stopFaceCam();
+  if(tab!=='enroll') stopWebcam();
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(tab+'Section').classList.add('active');
+  closeSidebar();
+  const m=tabMeta[tab]||tabMeta.dashboard;
+  document.getElementById('topTitle').textContent=m.title;
+  document.getElementById('topSub').textContent=m.sub;
+  document.getElementById('topChip').textContent=m.chip;
+  document.getElementById('heroChip').textContent=m.chip;
+  if(tab==='face') loadRecentScans();
+  if(tab==='dashboard') loadDashboard();
+  if(tab==='manage') loadManageStudents();
+  if(tab==='reports') {}
+}
+
+/* ---- HELPERS ---- */
+function statusBadge(s){
+  const map={P:'present',L:'late',A:'absent'};
+  const labels={P:'Present',L:'Late',A:'Absent'};
+  const icons={P:'fa-circle-check',L:'fa-clock',A:'fa-circle-xmark'};
+  const cls=map[s]||'gray';
+  return s?`<span class="badge ${cls}"><i class="fas ${icons[s]||'fa-minus'}"></i> ${labels[s]||s}</span>`:`<span class="badge gray">—</span>`;
+}
+
+function fmtTime(ts){
+  if(!ts) return '—';
+  try{
+    const d=new Date(ts);
+    if(!isNaN(d)){return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+    const p=ts.split(':');
+    if(p.length>=2){const n=new Date();n.setHours(+p[0],+p[1],+p[2]||0);return n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+  }catch(_){}
+  return ts;
+}
+
+/* ---- TOAST ---- */
+function toast(msg, type='info'){
+  const w=document.getElementById('toast-wrap');
+  const icons={success:'fa-circle-check',danger:'fa-circle-xmark',warning:'fa-triangle-exclamation',info:'fa-circle-info'};
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<i class="fas ${icons[type]}"></i><span>${msg}</span>`;
+  w.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(110%)';t.style.transition='all 0.25s';setTimeout(()=>t.remove(),250);},4000);
+  t.onclick=()=>t.remove();
+}
+
+/* ---- THEME ---- */
+function checkDark(){
+  if(localStorage.getItem('theme')==='dark') applyDark();
+}
+function toggleTheme(){
+  const isDark = localStorage.getItem('theme') === 'dark';
+  if(!isDark) applyDark(); else applyLight();
+}
+function applyDark(){
+  document.documentElement.setAttribute('data-dark','');
+  document.documentElement.style.setProperty('color-scheme','dark');
+  document.getElementById('themeToggle').classList.add('on');
+  localStorage.setItem('theme','dark');
+}
+function applyLight(){
+  document.documentElement.removeAttribute('data-dark');
+  document.documentElement.style.setProperty('color-scheme','light');
+  document.getElementById('themeToggle').classList.remove('on');
+  localStorage.setItem('theme','light');
+}
+
+/* ---- SPEECH ---- */
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  // Cancel any ongoing speech
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'en-IN';   // Indian English accent
+  utt.rate = 0.92;      // Slightly slower for clarity
+  utt.pitch = 1.05;
+  utt.volume = 1.0;
+  // Prefer a local voice if available
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.lang === 'en-IN') ||
+                    voices.find(v => v.lang.startsWith('en')) ||
+                    null;
+  if (preferred) utt.voice = preferred;
+  window.speechSynthesis.speak(utt);
+}
+
+/* ---- SIDEBAR ---- */
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('open');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+
+/* ---- LOGOUT ---- */
+function logout(){
+  stopFaceCam();stopWebcam();
+  localStorage.removeItem('token');localStorage.removeItem('user');
+  window.location.href='login.html?logout=1';
+}
+
+/* ---- PWA ---- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
