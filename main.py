@@ -58,12 +58,38 @@ from app.storage import ensure_dirs
 from app.db import engine, Base
 
 
+import logging as _startup_logging
+_startup_log = _startup_logging.getLogger("face_attendance.startup")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    ensure_dirs()
-    Base.metadata.create_all(bind=engine)
-    _run_migrations()
-    _ensure_super_admin()
+    _startup_log.info("🚀 Face Attendance starting up...")
+    try:
+        ensure_dirs()
+        _startup_log.info("✅ Directories ensured")
+    except Exception as e:
+        _startup_log.error("❌ ensure_dirs failed: %s", e)
+
+    try:
+        Base.metadata.create_all(bind=engine)
+        _startup_log.info("✅ Database tables created/verified")
+    except Exception as e:
+        _startup_log.error("❌ DB create_all failed: %s", e)
+        raise  # This is critical — app cannot run without DB tables
+
+    try:
+        _run_migrations()
+        _startup_log.info("✅ Migrations complete")
+    except Exception as e:
+        _startup_log.error("❌ Migrations failed (non-critical): %s", e)
+
+    try:
+        _ensure_super_admin()
+        _startup_log.info("✅ Super admin verified")
+    except Exception as e:
+        _startup_log.error("❌ Super admin setup failed (non-critical): %s", e)
+
+    _startup_log.info("🎯 Face Attendance startup complete!")
     yield
 
 
@@ -94,6 +120,9 @@ def _run_migrations():
     from app.db import engine as _engine
     from sqlalchemy import text
     import hashlib
+    import logging as _logging
+    _log = _logging.getLogger("face_attendance.migration")
+
     # Add columns that may not exist yet (safe for both fresh and existing DBs)
     # Using ALTER TABLE ... ADD COLUMN IF NOT EXISTS (PostgreSQL 9.6+)
     migrations = [
@@ -109,37 +138,50 @@ def _run_migrations():
     with _engine.connect() as conn:
         for table, col, defn in migrations:
             try:
-                # IF NOT EXISTS prevents errors on re-deploy
                 conn.execute(text(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {defn}"))
                 conn.commit()
-            except Exception:
+            except Exception as e:
                 conn.rollback()
+                _log.debug("Migration skip (column may exist): %s.%s — %s", table, col, e)
 
         # NOTE: face_encodings table is created by SQLAlchemy Base.metadata.create_all()
-        # Do NOT manually CREATE TABLE here — it conflicts with SQLAlchemy's autoincrement.
 
-        conn.execute(text("UPDATE users SET role='SUPER_ADMIN' WHERE is_super_admin=TRUE"))
-        conn.execute(text("UPDATE users SET role='ADMIN' WHERE is_super_admin=FALSE AND is_admin=TRUE"))
-        conn.execute(text("UPDATE users SET role='TEACHER' WHERE is_super_admin=FALSE AND is_admin=FALSE"))
-        conn.execute(text("UPDATE users SET school_name=COALESCE(NULLIF(school_name,''), full_name, '') WHERE role='ADMIN'"))
-        conn.execute(text("UPDATE users SET email='superadmin@gmail.com' WHERE is_super_admin=TRUE AND COALESCE(email,'')=''"))
-        conn.execute(text("UPDATE students SET student_code=id WHERE COALESCE(student_code,'')=''"))
-        conn.commit()
+        # Update role fields — safe on empty tables (0 rows updated = no-op)
+        update_stmts = [
+            "UPDATE users SET role='SUPER_ADMIN' WHERE is_super_admin=TRUE AND (role IS NULL OR role='')",
+            "UPDATE users SET role='ADMIN' WHERE is_super_admin=FALSE AND is_admin=TRUE AND (role IS NULL OR role='')",
+            "UPDATE users SET role='TEACHER' WHERE is_super_admin=FALSE AND is_admin=FALSE AND (role IS NULL OR role='')",
+            "UPDATE users SET school_name=COALESCE(NULLIF(school_name,''), full_name, '') WHERE role='ADMIN'",
+            "UPDATE users SET email='superadmin@gmail.com' WHERE is_super_admin=TRUE AND COALESCE(email,'')=''",
+            "UPDATE students SET student_code=id WHERE COALESCE(student_code,'')=''",
+        ]
+        for stmt in update_stmts:
+            try:
+                conn.execute(text(stmt))
+                conn.commit()
+            except Exception as e:
+                conn.rollback()
+                _log.warning("Migration UPDATE failed (non-critical): %s", e)
 
-        rows = conn.execute(text("SELECT id, COALESCE(student_code,''), COALESCE(school_name,'') FROM students")).fetchall()
-        for old_id, student_code, school_name in rows:
-            code = (student_code or old_id or "").strip()
-            school = (school_name or "").strip().lower()
-            if not code:
-                continue
-            scoped_id = "sid_" + hashlib.sha1(f"{school}|{code.lower()}".encode()).hexdigest()
-            if old_id == scoped_id:
-                continue
-            if conn.execute(text("SELECT 1 FROM students WHERE id=:id LIMIT 1"), {"id": scoped_id}).fetchone():
-                continue
-            conn.execute(text("UPDATE attendance SET student_id=:new_id WHERE student_id=:old_id"), {"new_id": scoped_id, "old_id": old_id})
-            conn.execute(text("UPDATE students SET id=:new_id WHERE id=:old_id"), {"new_id": scoped_id, "old_id": old_id})
-        conn.commit()
+        # Re-scope student IDs to scoped hashes (idempotent)
+        try:
+            rows = conn.execute(text("SELECT id, COALESCE(student_code,''), COALESCE(school_name,'') FROM students")).fetchall()
+            for old_id, student_code, school_name in rows:
+                code = (student_code or old_id or "").strip()
+                school = (school_name or "").strip().lower()
+                if not code:
+                    continue
+                scoped_id = "sid_" + hashlib.sha1(f"{school}|{code.lower()}".encode()).hexdigest()
+                if old_id == scoped_id:
+                    continue
+                if conn.execute(text("SELECT 1 FROM students WHERE id=:id LIMIT 1"), {"id": scoped_id}).fetchone():
+                    continue
+                conn.execute(text("UPDATE attendance SET student_id=:new_id WHERE student_id=:old_id"), {"new_id": scoped_id, "old_id": old_id})
+                conn.execute(text("UPDATE students SET id=:new_id WHERE id=:old_id"), {"new_id": scoped_id, "old_id": old_id})
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            _log.warning("Student ID re-scope migration failed (non-critical): %s", e)
 
 
 app = FastAPI(

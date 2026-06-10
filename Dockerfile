@@ -32,10 +32,11 @@ COPY . .
 # Download the required ONNX face recognition and liveness models
 RUN python download_model.py
 
-# Create uploads directory (writable for face photo uploads)
-# data/ is NOT needed for PostgreSQL deployments
-RUN mkdir -p uploads/students && \
-    chmod -R 777 uploads
+# Create uploads and data directories with proper permissions
+# data/models/ is populated by download_model.py during build
+# uploads/ is writable for face photo uploads at runtime
+RUN mkdir -p uploads/students data/models && \
+    chmod -R 777 uploads data
 
 # Expose the port (Render sets PORT env var, default to 8000)
 EXPOSE 8000
