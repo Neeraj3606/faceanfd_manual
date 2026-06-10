@@ -94,9 +94,10 @@ def _run_migrations():
     from app.db import engine as _engine
     from sqlalchemy import text
     import hashlib
+    # PostgreSQL-compatible column definitions (no SQLite DATETIME)
     migrations = [
         ("users", "is_super_admin",   "INTEGER NOT NULL DEFAULT 0"),
-        ("users", "updated_at",       "DATETIME"),
+        ("users", "updated_at",       "TIMESTAMP"),
         ("users", "role",             "VARCHAR(30) NOT NULL DEFAULT 'ADMIN'"),
         ("users", "school_name",      "VARCHAR(100) DEFAULT ''"),
         ("users", "class_assigned",   "VARCHAR(100) DEFAULT ''"),
@@ -112,14 +113,18 @@ def _run_migrations():
             except Exception:
                 pass
 
+        # PostgreSQL-compatible CREATE TABLE:
+        #   INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY  (replaces AUTOINCREMENT)
+        #   BYTEA                                              (replaces BLOB)
+        #   TIMESTAMP                                          (replaces DATETIME)
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS face_encodings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
                 student_id VARCHAR(50) NOT NULL REFERENCES students(id) ON DELETE CASCADE,
                 student_name VARCHAR(255) NOT NULL DEFAULT '',
-                encoding_blob BLOB NOT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME
+                encoding_blob BYTEA NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP
             )
         """))
         conn.commit()
