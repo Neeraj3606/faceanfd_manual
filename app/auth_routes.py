@@ -2,6 +2,7 @@
 Authentication routes for login/logout and user management
 """
 
+import os
 from datetime import timedelta
 from typing import Optional
 
