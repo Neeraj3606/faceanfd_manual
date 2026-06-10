@@ -894,13 +894,8 @@ canvas{width:100%!important;}
 <script>
 const API = window.location.origin;
 
-// ─── SECURITY: Force logout on back-button / page restore ───
-window.addEventListener('pageshow', function(event) {
-  if (event.persisted) {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    window.location.replace('/static/login.html');
-  }
+window.addEventListener('pageshow', e => {
+  if (e.persisted) { sessionStorage.clear(); location.replace('/static/login.html'); }
 });
 
 let TOKEN = sessionStorage.getItem('token') || '';

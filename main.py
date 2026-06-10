@@ -60,43 +60,58 @@ from app.db import engine, Base
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # ✅ Startup: ensure folders + create tables
     ensure_dirs()
     Base.metadata.create_all(bind=engine)
-
-    # ✅ SQLite migration: add missing columns if they don't exist
     _run_migrations()
-
+    _ensure_super_admin()
     yield
-    # ✅ Shutdown: nothing needed for now
+
+
+def _ensure_super_admin():
+    from app.db import SessionLocal
+    from app.models import User
+    from app.auth import get_password_hash
+    db = SessionLocal()
+    try:
+        if not db.query(User).filter(User.is_super_admin == True).first():
+            db.add(User(
+                username='superadmin@gmail.com',
+                email='superadmin@gmail.com',
+                hashed_password=get_password_hash('superadmin123'),
+                full_name='Super Administrator',
+                role='SUPER_ADMIN',
+                school_name='',
+                is_active=True,
+                is_admin=True,
+                is_super_admin=True,
+            ))
+            db.commit()
+    finally:
+        db.close()
 
 
 def _run_migrations():
-    """Add any missing columns to existing SQLite DB (safe to run every startup)"""
     from app.db import engine as _engine
     from sqlalchemy import text
     import hashlib
     migrations = [
-        # (table, column, definition)
-        ("users", "is_super_admin", "INTEGER NOT NULL DEFAULT 0"),
-        ("users", "updated_at",     "DATETIME"),
-        ("users", "role",           "VARCHAR(30) NOT NULL DEFAULT 'ADMIN'"),
-        ("users", "school_name",    "VARCHAR(100) DEFAULT ''"),
-        ("users", "class_assigned", "VARCHAR(100) DEFAULT ''"),
+        ("users", "is_super_admin",   "INTEGER NOT NULL DEFAULT 0"),
+        ("users", "updated_at",       "DATETIME"),
+        ("users", "role",             "VARCHAR(30) NOT NULL DEFAULT 'ADMIN'"),
+        ("users", "school_name",      "VARCHAR(100) DEFAULT ''"),
+        ("users", "class_assigned",   "VARCHAR(100) DEFAULT ''"),
         ("users", "section_assigned", "VARCHAR(50) DEFAULT ''"),
-        ("students", "school_name", "VARCHAR DEFAULT ''"),
-        ("students", "student_code", "VARCHAR(50) DEFAULT ''"),
+        ("students", "school_name",   "VARCHAR DEFAULT ''"),
+        ("students", "student_code",  "VARCHAR(50) DEFAULT ''"),
     ]
     with _engine.connect() as conn:
         for table, col, defn in migrations:
             try:
                 conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {defn}"))
                 conn.commit()
-                print(f"✅ Migration: added {table}.{col}")
             except Exception:
-                pass  # Column already exists — ignore
+                pass
 
-        # Create face_encodings table explicitly
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS face_encodings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,7 +124,6 @@ def _run_migrations():
         """))
         conn.commit()
 
-        # Backfill roles/scopes for older databases.
         conn.execute(text("UPDATE users SET role='SUPER_ADMIN' WHERE is_super_admin=1"))
         conn.execute(text("UPDATE users SET role='ADMIN' WHERE is_super_admin=0 AND is_admin=1"))
         conn.execute(text("UPDATE users SET role='TEACHER' WHERE is_super_admin=0 AND is_admin=0"))
@@ -118,18 +132,16 @@ def _run_migrations():
         conn.execute(text("UPDATE students SET student_code=id WHERE COALESCE(student_code,'')=''"))
         conn.commit()
 
-        # Move student PK to scoped deterministic ID so same student_code can exist in different schools.
         rows = conn.execute(text("SELECT id, COALESCE(student_code,''), COALESCE(school_name,'') FROM students")).fetchall()
         for old_id, student_code, school_name in rows:
             code = (student_code or old_id or "").strip()
             school = (school_name or "").strip().lower()
             if not code:
                 continue
-            scoped_id = "sid_" + hashlib.sha1(f"{school}|{code.lower()}".encode("utf-8")).hexdigest()
+            scoped_id = "sid_" + hashlib.sha1(f"{school}|{code.lower()}".encode()).hexdigest()
             if old_id == scoped_id:
                 continue
-            exists = conn.execute(text("SELECT 1 FROM students WHERE id=:id LIMIT 1"), {"id": scoped_id}).fetchone()
-            if exists:
+            if conn.execute(text("SELECT 1 FROM students WHERE id=:id LIMIT 1"), {"id": scoped_id}).fetchone():
                 continue
             conn.execute(text("UPDATE attendance SET student_id=:new_id WHERE student_id=:old_id"), {"new_id": scoped_id, "old_id": old_id})
             conn.execute(text("UPDATE students SET id=:new_id WHERE id=:old_id"), {"new_id": scoped_id, "old_id": old_id})

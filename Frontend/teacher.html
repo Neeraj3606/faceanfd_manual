@@ -976,13 +976,8 @@ canvas{display:none;}
 <script>
 const API = window.location.origin;
 
-// ─── SECURITY: Force logout on back-button / page restore ───
-window.addEventListener('pageshow', function(event) {
-  if (event.persisted) {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    window.location.replace('/static/login.html');
-  }
+window.addEventListener('pageshow', e => {
+  if (e.persisted) { sessionStorage.clear(); location.replace('/static/login.html'); }
 });
 
 let token = sessionStorage.getItem('token') || '';
@@ -994,7 +989,7 @@ let state = {
   faceStream: null,
   photos: [],
   manData: {},
-  facingMode: localStorage.getItem('facingMode') || 'user'  // camera preference can stay in localStorage
+  facingMode: localStorage.getItem('facingMode') || 'user'
 };
 
 const MAX_PHOTOS = 15;

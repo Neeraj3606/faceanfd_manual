@@ -57,10 +57,15 @@ def clean_database():
             print("\n⚠️  WARNING: No super admin found in database!")
             print("   Creating default super admin...")
             from app.auth import get_password_hash
+            import os
+            pw = os.getenv('SUPER_ADMIN_PASSWORD', '')
+            if not pw:
+                import getpass
+                pw = getpass.getpass('Enter super admin password: ')
             new_super_admin = User(
                 username="superadmin@gmail.com",
                 email="superadmin@gmail.com",
-                hashed_password=get_password_hash("superadmin123"),
+                hashed_password=get_password_hash(pw),
                 full_name="Super Administrator",
                 role="SUPER_ADMIN",
                 school_name="",
@@ -69,7 +74,7 @@ def clean_database():
                 is_super_admin=True
             )
             db.add(new_super_admin)
-            print(f"   ✅ Created super admin: superadmin@gmail.com / superadmin123")
+            print(f"   ✅ Created super admin: superadmin@gmail.com")
         
         # Commit all changes
         db.commit()

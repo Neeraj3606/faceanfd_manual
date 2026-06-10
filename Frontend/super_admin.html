@@ -946,35 +946,17 @@ code{
 <script>
 const API = window.location.origin;
 
-// ─── SECURITY: Force logout on back-button / page restore ───
-// If page is loaded from bfcache (back/forward navigation), clear session and redirect
-window.addEventListener('pageshow', function(event) {
-  if (event.persisted) {
-    // Page loaded from back-forward cache — treat as logout
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    window.location.replace('/static/login.html');
-  }
+window.addEventListener('pageshow', e => {
+  if (e.persisted) { sessionStorage.clear(); location.replace('/static/login.html'); }
 });
 
 const _tok = sessionStorage.getItem('token') || '';
-const _usr = (() => { try { return JSON.parse(sessionStorage.getItem('user')||'{}'); } catch { return {}; } })();
+const _usr = (() => { try { return JSON.parse(sessionStorage.getItem('user') || '{}'); } catch { return {}; } })();
 const _uname = _usr.username || 'superadmin';
-let _platform = { platform:{}, schools:[], users:[] };
+let _platform = { platform: {}, schools: [], users: [] };
 
-// Auth check on page load
-if (!_tok || _tok === 'demo') {
-  alert('⚠ Session expired. Please login again.');
-  sessionStorage.removeItem('token');
-  sessionStorage.removeItem('user');
-  window.location.replace('/static/login.html');
-}
-
-// Verify super admin role
-if (_usr.role !== 'SUPER_ADMIN' && !_usr.is_super_admin) {
-  alert('⚠ Access denied. Super admin privileges required.');
-  window.location.replace('/static/login.html');
-}
+if (!_tok) { sessionStorage.clear(); location.replace('/static/login.html'); }
+if (_usr.role !== 'SUPER_ADMIN' && !_usr.is_super_admin) { location.replace('/static/login.html'); }
 
 ['sa-user','sb-name'].forEach(id => {
   const el = document.getElementById(id);

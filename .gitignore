@@ -1,18 +1,15 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
 *.so
-.Python
 
-# Virtual Environment (IMPORTANT - 900MB!)
+# Virtual Environments
 .venv/
 .venv311/
 venv/
-ENV/
 env/
 
-# ML Models (IMPORTANT - 600MB!)
+# ML Models
 data/models/
 *.onnx
 *.zip
@@ -21,55 +18,36 @@ data/models/
 *.h5
 *.pb
 
-# Database (IMPORTANT - Contains user data!)
+# Database & User Data
 *.db
 *.sqlite
 *.sqlite3
-data/attendance.db
 data/
+uploads/
 
 # Encodings
-data/encodings.pkl
 *.pkl
 
-# User Uploads (IMPORTANT - Contains face photos!)
-uploads/
-data/matplotlib/
-
-# Environment variables (NEVER commit these!)
+# Environment
 .env
-.env.local
-.env.production
-.env.staging
+.env.*
 
-# IDE
+# IDE & OS
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-
-# OS
 .DS_Store
 Thumbs.db
+*.swp
 
 # Logs
 *.log
 logs/
 
-# Excel exports
+# Exports & Test files
 *.xlsx
 *.xls
-
-# Test/debug files
 test_*.py
 debug_*.py
 verify_*.py
 scratch/
-
-# System service file
-face-attendance.service
-
-# Temp files
 *.tmp
-*.bak

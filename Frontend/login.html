@@ -132,11 +132,7 @@
 
 <script>
   const API = window.location.origin;
-
-  // ─── SECURITY: Always clear session on login page load ───
-  // This ensures that pressing Back from a dashboard always requires re-login
-  sessionStorage.removeItem('token');
-  sessionStorage.removeItem('user');
+  sessionStorage.clear();
 
   function toggleEye() {
     const inp = document.getElementById('password');
