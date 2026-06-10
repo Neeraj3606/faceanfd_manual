@@ -111,7 +111,7 @@ def _run_migrations():
                 conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {defn}"))
                 conn.commit()
             except Exception:
-                pass
+                conn.rollback()
 
         # PostgreSQL-compatible CREATE TABLE:
         #   INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY  (replaces AUTOINCREMENT)
