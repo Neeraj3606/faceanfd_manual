@@ -1,7 +1,7 @@
 """
 Database setup (SQLAlchemy)
 
-✔ Uses SQLite database
+✔ Supports PostgreSQL (Render) and SQLite (local dev)
 ✔ Creates tables automatically (main.py lifespan)
 ✔ Provides session to FastAPI
 """
@@ -11,22 +11,38 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 from app.config import DB_URL
 
+# --------------------------------
+# Fix Render's legacy postgres:// URL prefix
+# SQLAlchemy 1.4+ requires postgresql://
+# --------------------------------
+_db_url = DB_URL
+if _db_url.startswith("postgres://"):
+    _db_url = _db_url.replace("postgres://", "postgresql://", 1)
 
 # --------------------------------
-# Engine (SQLite)
+# Engine
 # --------------------------------
 connect_args = {}
 
-# ✅ SQLite thread fix for FastAPI
-if DB_URL.startswith("sqlite"):
+if _db_url.startswith("sqlite"):
+    # SQLite: fix thread issue for FastAPI
     connect_args = {"check_same_thread": False}
-
-engine = create_engine(
-    DB_URL,
-    pool_pre_ping=True,
-    connect_args=connect_args,
-    echo=False  # Set to True for SQL logging
-)
+    engine = create_engine(
+        _db_url,
+        pool_pre_ping=True,
+        connect_args=connect_args,
+        echo=False,
+    )
+else:
+    # PostgreSQL (Render): use connection pooling
+    engine = create_engine(
+        _db_url,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=10,
+        pool_recycle=300,  # recycle connections every 5 minutes
+        echo=False,
+    )
 
 
 # --------------------------------

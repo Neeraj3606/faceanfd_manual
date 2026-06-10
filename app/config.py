@@ -46,10 +46,16 @@ SPOOF_MODEL_PATH = os.getenv(
 
 
 # ==============================
-# Database (SQLite only)
+# Database
 # ==============================
+# LOCAL DEV: sqlite:///data/attendance.db  (default fallback)
+# RENDER:    Set DATABASE_URL env variable in Render dashboard
+#            Render provides: postgresql://user:pass@host/dbname
 _sqlite_path = os.path.join(DATA_DIR, "attendance.db")
 _db_env = (os.getenv("DATABASE_URL") or "").strip()
+# Render sometimes provides legacy postgres:// prefix — SQLAlchemy needs postgresql://
+if _db_env.startswith("postgres://"):
+    _db_env = _db_env.replace("postgres://", "postgresql://", 1)
 DB_URL = _db_env if _db_env else f"sqlite:///{_sqlite_path}"
 
 

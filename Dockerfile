@@ -1,16 +1,18 @@
-# Face Attendance System - Dockerfile for Railway Deployment
-# Uses Python 3.11 slim with OpenCV, InsightFace, and ONNX Runtime dependencies
+# Face Attendance System - Dockerfile for Render Deployment
+# Uses Python 3.11 slim with OpenCV and ONNX Runtime dependencies
 
 FROM python:3.11-slim
 
 # Prevent Python from writing pyc files and buffering stdout
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+# Skip local venv bootstrap (not needed in Docker)
+ENV FACE_ATTENDANCE_SKIP_VENV_BOOTSTRAP=1
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies required by OpenCV wheels
+# Install system dependencies required by OpenCV and psycopg2
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
@@ -30,13 +32,13 @@ COPY . .
 # Download the required ONNX face recognition and liveness models
 RUN python download_model.py
 
-# Create necessary directories and set permissions so non-root users (Render) can write to SQLite
-RUN mkdir -p uploads/students data && \
-    chmod -R 777 uploads data
+# Create uploads directory (writable for face photo uploads)
+# data/ is NOT needed for PostgreSQL deployments
+RUN mkdir -p uploads/students && \
+    chmod -R 777 uploads
 
-# Expose the port (Railway sets PORT env var, but we default to 8000)
+# Expose the port (Render sets PORT env var, default to 8000)
 EXPOSE 8000
 
-# Start the application
-# Render/Railway provides PORT env variable, otherwise default to 8000
+# Start the application — Render provides PORT env variable
 CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}

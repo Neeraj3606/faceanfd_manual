@@ -94,9 +94,10 @@ def _run_migrations():
     from app.db import engine as _engine
     from sqlalchemy import text
     import hashlib
-    # PostgreSQL-compatible column definitions (no SQLite DATETIME)
+    # Add columns that may not exist yet (safe for both fresh and existing DBs)
+    # Using ALTER TABLE ... ADD COLUMN IF NOT EXISTS (PostgreSQL 9.6+)
     migrations = [
-        ("users", "is_super_admin",   "INTEGER NOT NULL DEFAULT 0"),
+        ("users", "is_super_admin",   "BOOLEAN NOT NULL DEFAULT FALSE"),
         ("users", "updated_at",       "TIMESTAMP"),
         ("users", "role",             "VARCHAR(30) NOT NULL DEFAULT 'ADMIN'"),
         ("users", "school_name",      "VARCHAR(100) DEFAULT ''"),
@@ -108,32 +109,20 @@ def _run_migrations():
     with _engine.connect() as conn:
         for table, col, defn in migrations:
             try:
-                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {defn}"))
+                # IF NOT EXISTS prevents errors on re-deploy
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {defn}"))
                 conn.commit()
             except Exception:
                 conn.rollback()
 
-        # PostgreSQL-compatible CREATE TABLE:
-        #   INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY  (replaces AUTOINCREMENT)
-        #   BYTEA                                              (replaces BLOB)
-        #   TIMESTAMP                                          (replaces DATETIME)
-        conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS face_encodings (
-                id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-                student_id VARCHAR(50) NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-                student_name VARCHAR(255) NOT NULL DEFAULT '',
-                encoding_blob BYTEA NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP
-            )
-        """))
-        conn.commit()
+        # NOTE: face_encodings table is created by SQLAlchemy Base.metadata.create_all()
+        # Do NOT manually CREATE TABLE here — it conflicts with SQLAlchemy's autoincrement.
 
-        conn.execute(text("UPDATE users SET role='SUPER_ADMIN' WHERE is_super_admin=1"))
-        conn.execute(text("UPDATE users SET role='ADMIN' WHERE is_super_admin=0 AND is_admin=1"))
-        conn.execute(text("UPDATE users SET role='TEACHER' WHERE is_super_admin=0 AND is_admin=0"))
+        conn.execute(text("UPDATE users SET role='SUPER_ADMIN' WHERE is_super_admin=TRUE"))
+        conn.execute(text("UPDATE users SET role='ADMIN' WHERE is_super_admin=FALSE AND is_admin=TRUE"))
+        conn.execute(text("UPDATE users SET role='TEACHER' WHERE is_super_admin=FALSE AND is_admin=FALSE"))
         conn.execute(text("UPDATE users SET school_name=COALESCE(NULLIF(school_name,''), full_name, '') WHERE role='ADMIN'"))
-        conn.execute(text("UPDATE users SET email='superadmin@gmail.com' WHERE is_super_admin=1 AND COALESCE(email,'')=''"))
+        conn.execute(text("UPDATE users SET email='superadmin@gmail.com' WHERE is_super_admin=TRUE AND COALESCE(email,'')=''"))
         conn.execute(text("UPDATE students SET student_code=id WHERE COALESCE(student_code,'')=''"))
         conn.commit()
 
