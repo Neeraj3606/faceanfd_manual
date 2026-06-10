@@ -1,15 +1,18 @@
 {
-  "name": "Face Attendance System",
-  "short_name": "FaceAtt",
-  "description": "AI-powered face recognition attendance system with liveness detection",
+  "name": "FaceAttend — Smart Attendance",
+  "short_name": "FaceAttend",
+  "description": "AI-powered face recognition attendance system with real-time analytics, liveness detection, and Power BI-style dashboards.",
   "id": "/static/",
   "start_url": "/static/login.html",
   "scope": "/static/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#0f172a",
-  "theme_color": "#1a56db",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#07101e",
+  "theme_color": "#1547c0",
   "orientation": "portrait-primary",
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/static/icons/icon-72x72.png",
@@ -58,7 +61,7 @@
   "categories": ["education", "productivity"],
   "shortcuts": [
     {
-      "name": "Face Attendance",
+      "name": "Mark Attendance",
       "short_name": "Attendance",
       "description": "Mark face attendance quickly",
       "url": "/static/teacher.html",
@@ -67,8 +70,15 @@
     {
       "name": "Admin Dashboard",
       "short_name": "Admin",
-      "description": "Institution admin panel",
+      "description": "Institution admin analytics panel",
       "url": "/static/admin_dashboard.html",
+      "icons": [{ "src": "/static/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Super Admin",
+      "short_name": "Super Admin",
+      "description": "Platform super admin portal",
+      "url": "/static/super_admin.html",
       "icons": [{ "src": "/static/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ],
@@ -77,13 +87,18 @@
       "src": "/static/icons/screenshot-wide.png",
       "sizes": "1280x720",
       "type": "image/png",
-      "form_factor": "wide"
+      "form_factor": "wide",
+      "label": "FaceAttend Admin Dashboard"
     },
     {
       "src": "/static/icons/screenshot-narrow.png",
       "sizes": "750x1334",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "FaceAttend Mobile View"
     }
-  ]
+  ],
+  "edge_side_panel": {
+    "preferred_width": 380
+  }
 }

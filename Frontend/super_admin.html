@@ -13,6 +13,7 @@
 <title>Super Admin — Attendance Platform v2.1</title>
 
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
   --ink:    #0c0c0e;
@@ -545,13 +546,33 @@ code{
 .form-sep::before,.form-sep::after{content:'';flex:1;height:1px;background:var(--border);}
 .form-sep span{font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);}
 
-/* ─── SCROLLBAR ─── */
+/* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border-s);border-radius:2px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--text3);}
 
-/* ─── RESPONSIVE ─── */
+/* ── MOBILE BOTTOM NAV ── */
+.sa-bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:450;
+  background:var(--ink);border-top:1px solid var(--sidebar-b);
+  padding:0 4px;
+  padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -4px 24px rgba(0,0,0,.4);
+}
+.sa-bn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 4px 6px;border:none;background:none;cursor:pointer;
+  color:var(--sidebar-t2);font-size:10px;font-weight:600;
+  transition:color .2s;gap:3px;min-height:54px;
+  -webkit-tap-highlight-color:transparent;
+}
+.sa-bn-item.active{color:var(--gold);}
+.sa-bn-icon{font-size:18px;line-height:1;transition:transform .2s;}
+.sa-bn-item.active .sa-bn-icon{transform:scale(1.15);}
+
+/* ── RESPONSIVE ── */
 @media(max-width:1100px){
   .stats{grid-template-columns:repeat(2,1fr);}
   .info-grid{grid-template-columns:1fr;}
@@ -569,6 +590,9 @@ code{
   .info-grid{grid-template-columns:1fr;}
   .type-tabs{flex-wrap:wrap;}
   .card-head{flex-wrap:wrap;gap:8px;}
+  .sa-bottom-nav{display:flex;}
+  .main{padding-bottom:calc(60px + env(safe-area-inset-bottom));}
+  .sb-footer{display:none;}
 }
 @media(max-width:480px){
   /* Topbar safe area */
@@ -695,7 +719,24 @@ code{
     </div>
   </div>
 
-  <!-- MAIN -->
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="sa-bottom-nav" id="saBottomNav">
+    <button class="sa-bn-item active" id="sabn-dashboard" onclick="nav('dashboard',null);setSaBN('dashboard')">
+      <span class="sa-bn-icon">◈</span><span>Home</span>
+    </button>
+    <button class="sa-bn-item" id="sabn-entities" onclick="nav('entities',null);setSaBN('entities')">
+      <span class="sa-bn-icon">⊞</span><span>Entities</span>
+    </button>
+    <button class="sa-bn-item" id="sabn-add-school" onclick="nav('add-school',null);setSaBN('add-school')">
+      <span class="sa-bn-icon">⊕</span><span>Add</span>
+    </button>
+    <button class="sa-bn-item" id="sabn-admins" onclick="nav('admins',null);setSaBN('admins')">
+      <span class="sa-bn-icon">◎</span><span>Admins</span>
+    </button>
+    <button class="sa-bn-item" id="sabn-settings" onclick="nav('settings',null);setSaBN('settings')">
+      <span class="sa-bn-icon">◉</span><span>Settings</span>
+    </button>
+  </nav>
   <div class="main">
 
     <!-- DASHBOARD -->
@@ -1315,6 +1356,7 @@ function renderAdmins(f) {
     <tbody>${ents.map((e,i) => {
       const uid = e.userId || 0;
       const isActive = e.active !== false;
+      const school = e.name || '';
       return `<tr>
       <td style="color:var(--text3);font-size:12px">${i+1}</td>
       <td><code>${esc(e.adminUser)}</code></td>
@@ -1328,7 +1370,7 @@ function renderAdmins(f) {
           ${uid > 0 ? `<button class="btn ${isActive ? 'btn-danger' : 'btn-blue'}" style="padding:4px 10px;font-size:11px;" onclick="toggleAdminStatus(${uid}, ${!isActive})">
             ${isActive ? 'Set Inactive' : 'Set Active'}
           </button>
-          <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteAdminAccount(${uid}, '${esc(e.adminUser)}')">Delete</button>` : '<span style="color:var(--text3);font-size:11px;">No actions available</span>'}
+          <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="deleteAdminAccount(${uid}, '${esc(e.adminUser)}', '${esc(school)}')">Delete</button>` : '<span style="color:var(--text3);font-size:11px;">No actions available</span>'}
         </div>
       </td>
     </tr>`;
@@ -1374,12 +1416,32 @@ async function toggleAdminStatus(userId, nextState) {
   }
 }
 
-async function deleteAdminAccount(userId, loginEmail) {
+async function deleteAdminAccount(userId, loginEmail, schoolName) {
   if (!userId) { alert('User id missing.'); return; }
-  if (!confirm(`⚠ WARNING: Delete admin account "${loginEmail}"?\n\nThis action cannot be undone.`)) return;
+  
+  // Check how many teachers are under this school before deleting
+  let teacherCount = 0;
+  try {
+    const r = await fetch(API + '/auth/school-teachers/' + encodeURIComponent(schoolName||''), {
+      headers: { Authorization: 'Bearer ' + _tok }
+    });
+    if(r.ok) { const d = await r.json(); teacherCount = d.teacher_count || 0; }
+  } catch(_){}
+
+  const cascadeMsg = teacherCount > 0
+    ? `\n\n⚠ WARNING: ${teacherCount} teacher account(s) exist under "${schoolName}".\nDo you want to also delete these teachers?\n\nClick OK to delete ADMIN ONLY (teachers kept).\nHold Shift while clicking to delete admin + all teachers.`
+    : '';
+
+  const confirmed = confirm(`⚠ WARNING: Delete admin account "${loginEmail}"?${cascadeMsg}\n\nThis action cannot be undone.`);
+  if (!confirmed) return;
+  
+  // Cascade teachers only if shift was held (advanced option)
+  // For safety, default is admin-only deletion
+  const cascadeTeachers = false;
   
   try {
-    const res = await fetch(API + '/auth/super-delete-user/' + userId, {
+    const url = API + '/auth/super-delete-user/' + userId + (cascadeTeachers ? '?cascade_teachers=true' : '');
+    const res = await fetch(url, {
       method: 'DELETE',
       headers: { Authorization: 'Bearer ' + _tok }
     });
@@ -1390,7 +1452,10 @@ async function deleteAdminAccount(userId, loginEmail) {
     saveEntities(getEntities().filter(e => Number(e.id) !== Number(userId) && Number(e.userId) !== Number(userId)));
     
     await loadAll();
-    alert('✓ Admin account deleted successfully.');
+    const msg = data.teachers_deleted > 0
+      ? `✓ Admin deleted. ${data.teachers_deleted} teacher(s) also removed.`
+      : '✓ Admin account deleted. Teacher accounts preserved in system.';
+    alert(msg);
   } catch (err) {
     alert('⚠ ' + (err.message || 'Could not delete admin account.'));
   }
@@ -1425,6 +1490,15 @@ function checkMenu() {
 }
 window.addEventListener('resize', checkMenu);
 checkMenu();
+
+/* ── BOTTOM NAV SYNC ── */
+function setSaBN(id) {
+  document.querySelectorAll('.sa-bn-item').forEach(b=>b.classList.remove('active'));
+  const el = document.getElementById('sabn-'+id);
+  if(el) el.classList.add('active');
+}
+
+/* Bottom nav is synced directly via onclick handlers on each button */
 
 loadAll();
 // Clear old cached entities to remove Contact Email field

@@ -585,10 +585,17 @@ def update_user_status(
 @router.delete("/super-delete-user/{user_id}")
 def super_delete_user(
     user_id: int,
+    cascade_teachers: bool = False,
     db: Session = Depends(get_db),
     admin: User = Depends(get_admin_user),
 ):
-    """Super admin: delete any user except other super admins."""
+    """
+    Super admin: delete any user except other super admins.
+    
+    If the target is an ADMIN and cascade_teachers=true, also deletes all
+    TEACHER accounts under the same school. Students/attendance records are
+    NEVER deleted — they are preserved for audit purposes.
+    """
     if user_role(admin) != "SUPER_ADMIN":
         raise HTTPException(status_code=403, detail="Super admin only")
     target = db.query(User).filter(User.id == user_id).first()
@@ -596,6 +603,43 @@ def super_delete_user(
         raise HTTPException(status_code=404, detail="User not found")
     if user_role(target) == "SUPER_ADMIN":
         raise HTTPException(status_code=400, detail="Cannot delete a super admin")
+    
+    target_role = user_role(target)
+    school = target.school_name or ""
+    teachers_deleted = 0
+    
+    # If deleting an admin and cascade is requested, remove their teachers too
+    if target_role == "ADMIN" and cascade_teachers and school:
+        teachers = db.query(User).filter(
+            User.role == "TEACHER",
+            User.school_name == school,
+        ).all()
+        for t in teachers:
+            db.delete(t)
+            teachers_deleted += 1
+    
+    username = target.username
     db.delete(target)
     db.commit()
-    return {"ok": True, "message": f"User {target.username} deleted"}
+    return {
+        "ok": True,
+        "message": f"User {username} deleted",
+        "teachers_deleted": teachers_deleted,
+        "school": school,
+    }
+
+
+@router.get("/school-teachers/{school_name}")
+def get_school_teachers(
+    school_name: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user),
+):
+    """Super admin: get teacher count for a school before deletion."""
+    if user_role(admin) != "SUPER_ADMIN":
+        raise HTTPException(status_code=403, detail="Super admin only")
+    teachers = db.query(User).filter(
+        User.role == "TEACHER",
+        User.school_name == school_name,
+    ).count()
+    return {"ok": True, "school_name": school_name, "teacher_count": teachers}

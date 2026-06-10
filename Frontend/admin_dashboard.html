@@ -14,6 +14,7 @@
 <link rel="manifest" href="/static/manifest.json"/>
 <title>Institution Admin — Face Attendance</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ════════════════════════════════════════
    TOKENS
@@ -672,6 +673,54 @@ canvas{width:100%!important;}
 
 
 /* ════════════════════════════════════════
+   CHART CONTAINERS
+════════════════════════════════════════ */
+.pbi-chart-wrap{
+  position:relative;width:100%;
+  background:var(--surface);border-radius:12px;
+}
+.pbi-donut-wrap{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  padding:16px 0 10px;
+}
+.donut-center-text{
+  position:absolute;text-align:center;pointer-events:none;
+}
+.donut-center-val{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.04em;font-family:'Outfit',sans-serif;}
+.donut-center-lbl{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:2px;}
+.legend-row{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:5px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.chart-tabs{display:flex;gap:4px;margin-bottom:14px;}
+.ctab{padding:5px 13px;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid var(--border-m);background:var(--surface2);color:var(--muted);font-family:'Outfit',sans-serif;transition:all .2s;}
+.ctab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+/* KPI delta arrows */
+.kpi-delta{font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:3px;margin-top:4px;padding:2px 7px;border-radius:20px;}
+.kpi-up{color:#0f7a55;background:rgba(15,122,85,.1);}
+.kpi-down{color:#c92a2a;background:rgba(201,42,42,.1);}
+/* Mobile bottom nav */
+.bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:var(--sidebar);
+  border-top:1px solid var(--sidebar-b);
+  padding:0 4px;
+  padding-bottom:env(safe-area-inset-bottom);
+  safe-area-inset-bottom:0;
+  box-shadow:0 -4px 24px rgba(0,0,0,.25);
+}
+.bn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 4px 6px;border:none;background:none;cursor:pointer;
+  color:var(--sidebar-t2);font-size:10px;font-weight:600;font-family:'Outfit',sans-serif;
+  transition:color .2s;gap:3px;min-height:54px;
+  -webkit-tap-highlight-color:transparent;
+}
+.bn-item.active{color:var(--accent);}
+.bn-item.active .bn-icon{transform:scale(1.15);}
+.bn-icon{font-size:20px;line-height:1;transition:transform .2s;}
+.bn-lbl{font-size:9px;letter-spacing:.02em;}
+
+/* ════════════════════════════════════════
    RESPONSIVE
 ════════════════════════════════════════ */
 @media(max-width:1100px){
@@ -687,6 +736,11 @@ canvas{width:100%!important;}
   .content{padding:18px 16px;}
   .topbar{padding:16px 18px;}
   .menu-btn{display:flex!important;}
+  .bottom-nav{display:flex;}
+  .main{padding-bottom:calc(54px + env(safe-area-inset-bottom));}
+  .content{padding-bottom:calc(80px + env(safe-area-inset-bottom));}
+  /* Hide sidebar on mobile — use bottom nav instead */
+  .sb-footer{display:none;}
 }
 @media(max-width:480px){
   body{font-size:13px;}
@@ -718,7 +772,7 @@ canvas{width:100%!important;}
   .card-head h3{font-size:13.5px;}
   /* Grids */
   .dl-grid{grid-template-columns:1fr;}
-  .quick-actions{grid-template-columns:1fr;}
+  .quick-actions{grid-template-columns:1fr 1fr;}
   .dash-grid{grid-template-columns:1fr;}
   /* Modal */
   .modal{padding:20px 16px;border-radius:14px;}
@@ -731,8 +785,6 @@ canvas{width:100%!important;}
   .table-wrap table{min-width:480px;}
   /* AI chat */
   .content{padding:14px 12px;}
-  /* Safe area content bottom */
-  .main{padding-bottom:env(safe-area-inset-bottom);}
 }
 .menu-btn{display:none;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.12);color:#fff;cursor:pointer;align-items:center;justify-content:center;font-size:18px;}
 #ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:250;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
@@ -743,6 +795,25 @@ canvas{width:100%!important;}
 <body>
 <div id="toast-wrap"></div>
 <div id="ov" onclick="closeMobile()"></div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bn-item active" id="bn-dashboard" onclick="showPage('dashboard');setBN('dashboard')">
+    <span class="bn-icon">◈</span><span class="bn-lbl">Dashboard</span>
+  </button>
+  <button class="bn-item" id="bn-teachers" onclick="showPage('teachers');setBN('teachers')">
+    <span class="bn-icon">👨‍🏫</span><span class="bn-lbl">Teachers</span>
+  </button>
+  <button class="bn-item" id="bn-students" onclick="showPage('students');setBN('students')">
+    <span class="bn-icon">🎓</span><span class="bn-lbl">Students</span>
+  </button>
+  <button class="bn-item" id="bn-reports" onclick="showPage('reports');setBN('reports')">
+    <span class="bn-icon">📊</span><span class="bn-lbl">Reports</span>
+  </button>
+  <button class="bn-item" id="bn-settings" onclick="showPage('settings');setBN('settings')">
+    <span class="bn-icon">⚙</span><span class="bn-lbl">Settings</span>
+  </button>
+</nav>
 
 <!-- TEACHER MODAL -->
 <div class="modal-bg" id="teacherModal">
@@ -1036,133 +1107,253 @@ function render(){
 }
 
 /* ════════════════════════
-   DASHBOARD
+   DASHBOARD — Power BI style
 ════════════════════════ */
-function renderDashboard(c){
+let _chartInstances = {};
+function destroyChart(id){
+  if(_chartInstances[id]){ _chartInstances[id].destroy(); delete _chartInstances[id]; }
+}
+
+async function renderDashboard(c){
   const t = getTeachers();
   const pct = classData.length ? Math.round(classData.reduce((a,g)=>a+Number(g.attendance_rate||0),0)/classData.length) : 0;
-  const classBars = classData.length
-    ? classData.map(g=>{
-        const label=`${g.class_name||'—'}-${g.section||'—'}`;
-        const p=Math.round(Number(g.attendance_rate||0));
-        const color = p>=85?'#1d6ae5':p>=60?'#f59e0b':'#dc2626';
-        return `<div class="cc-row">
-          <div><div class="cc-name">${esc(label)}</div><div class="cc-sub">${(g.present||0)+' / '+(g.total||0)} present</div></div>
-          <div class="cc-track"><div class="cc-fill" style="width:${p}%;background:linear-gradient(90deg,${color},${color}aa)"></div></div>
-          <div class="cc-pct" style="color:${color}">${p}%</div>
-        </div>`;
-      }).join('')
-    : '<div class="empty"><div class="empty-icon">📊</div>No class data yet.</div>';
+  const totalP = totalPresent(), totalA = totalAbsent();
+  const totalScoped = totalP + totalA;
+
+  // Fetch monthly trend data
+  let monthlyLabels = [], monthlyValues = [];
+  let summaryData = { total_students: students.length, present_today: totalP, weekly_avg: 0, monthly_avg: 0 };
+  try {
+    const [mRes, sRes] = await Promise.all([
+      fetch(API+'/analytics/monthly',{headers:{Authorization:`Bearer ${TOKEN}`}}).then(r=>r.json()),
+      fetch(API+'/analytics/summary',{headers:{Authorization:`Bearer ${TOKEN}`}}).then(r=>r.json())
+    ]);
+    if(mRes.ok){ monthlyLabels = mRes.labels||[]; monthlyValues = mRes.values||[]; }
+    if(sRes.ok){ summaryData = {...summaryData, ...sRes}; }
+  } catch(_){}
 
   c.innerHTML = `<div class="page">
     <div class="hero">
-      <div class="hero-eyebrow">Institution Admin Portal</div>
-      <h1>${esc(ME?.school_name||'School')} — Admin Dashboard</h1>
-      <p>Manage teachers, students, attendance data and exports — all isolated to your school.</p>
+      <div class="hero-eyebrow">Institution Admin · Power BI Analytics</div>
+      <h1>${esc(ME?.school_name||'School')} Dashboard</h1>
+      <p>Real-time attendance analytics, class performance and student management — all in one place.</p>
       <div class="hero-pills">
         <div class="h-pill">👨‍🏫 ${t.length} Teachers</div>
         <div class="h-pill">🎓 ${students.length} Students</div>
-        <div class="h-pill">🏫 ${classCount()} Classes</div>
-        <div class="h-pill">📅 Today: ${pct}% avg</div>
+        <div class="h-pill">📊 ${pct}% Today Avg</div>
+        <div class="h-pill">📈 ${summaryData.monthly_avg}% Monthly</div>
       </div>
     </div>
 
     <div class="stats-grid">
       <div class="stat-card sc-1">
+        <div class="stat-icon">🎓</div>
+        <div class="stat-val">${students.length}</div>
+        <div class="stat-label">Total Students</div>
+        <div class="kpi-delta kpi-up">↑ Active</div>
+      </div>
+      <div class="stat-card sc-2">
+        <div class="stat-icon">✅</div>
+        <div class="stat-val">${totalP}</div>
+        <div class="stat-label">Present Today</div>
+        <div class="kpi-delta ${totalScoped>0&&totalP/totalScoped>=0.75?'kpi-up':'kpi-down'}">${totalScoped>0?Math.round(totalP/totalScoped*100):0}% rate</div>
+      </div>
+      <div class="stat-card sc-3">
+        <div class="stat-icon">📈</div>
+        <div class="stat-val">${summaryData.weekly_avg}%</div>
+        <div class="stat-label">Weekly Avg</div>
+        <div class="kpi-delta ${summaryData.weekly_avg>=75?'kpi-up':'kpi-down'}">7-day trend</div>
+      </div>
+      <div class="stat-card sc-4">
+        <div class="stat-icon">📅</div>
+        <div class="stat-val">${summaryData.monthly_avg}%</div>
+        <div class="stat-label">Monthly Avg</div>
+        <div class="kpi-delta ${summaryData.monthly_avg>=75?'kpi-up':'kpi-down'}">This month</div>
+      </div>
+      <div class="stat-card sc-5">
         <div class="stat-icon">👨‍🏫</div>
         <div class="stat-val">${t.length}</div>
         <div class="stat-label">Teachers</div>
-      </div>
-      <div class="stat-card sc-2">
-        <div class="stat-icon">🎓</div>
-        <div class="stat-val">${students.length}</div>
-        <div class="stat-label">Students</div>
-      </div>
-      <div class="stat-card sc-3">
-        <div class="stat-icon">🏫</div>
-        <div class="stat-val">${classCount()}</div>
-        <div class="stat-label">Classes</div>
-      </div>
-      <div class="stat-card sc-4">
-        <div class="stat-icon">✅</div>
-        <div class="stat-val">${totalPresent()}</div>
-        <div class="stat-label">Present Today</div>
-      </div>
-      <div class="stat-card sc-5">
-        <div class="stat-icon">✕</div>
-        <div class="stat-val">${totalAbsent()}</div>
-        <div class="stat-label">Absent Today</div>
+        <div class="kpi-delta kpi-up">${classCount()} classes</div>
       </div>
     </div>
 
-    <div class="dash-grid">
-      <div>
-        <div class="card">
-          <div class="card-head">
-            <div><h3>Class-wise Attendance</h3><p class="meta">Today's attendance rate per class-section</p></div>
-            <button class="btn" onclick="showPage('reports')" style="font-size:11.5px;padding:6px 12px;">View All →</button>
+    <!-- ROW 1: Trend + Donut -->
+    <div class="dash-grid" style="margin-bottom:18px;">
+      <div class="card">
+        <div class="card-head">
+          <div><h3>📈 Attendance Trend</h3><p class="meta">Monthly present count by day</p></div>
+          <div class="chart-tabs">
+            <button class="ctab active" id="ctab-month" onclick="switchTrendChart('month')">Month</button>
           </div>
-          <div class="card-body">
-            <div class="class-chart-wrap">${classBars}</div>
+        </div>
+        <div class="card-body">
+          <div style="height:200px;position:relative;"><canvas id="trendChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3>🍩 Today's Ratio</h3><p class="meta">Present vs Absent breakdown</p></div></div>
+        <div class="card-body">
+          <div class="pbi-donut-wrap" style="height:200px;">
+            <canvas id="donutChart" style="max-height:180px;"></canvas>
+            <div class="donut-center-text">
+              <div class="donut-center-val">${pct}%</div>
+              <div class="donut-center-lbl">Present</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">
+            <div class="legend-row"><div class="legend-dot" style="background:#1d6ae5"></div><span style="flex:1;color:var(--text2);">Present</span><strong>${totalP}</strong></div>
+            <div class="legend-row"><div class="legend-dot" style="background:#dc2626"></div><span style="flex:1;color:var(--text2);">Absent</span><strong>${totalA}</strong></div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div>
-        <div class="card" style="margin-bottom:14px;">
-          <div class="card-head"><h3>Quick Actions</h3><span class="meta">Admin tools</span></div>
-          <div class="card-body">
-            <div class="quick-actions">
-              <button class="qa-btn" onclick="openTeacherAdd()">
-                <div class="qa-btn-icon">👨‍🏫</div>
-                <div class="qa-btn-label">Add Teacher</div>
-                <div class="qa-btn-sub">Create teacher login</div>
-              </button>
-              <button class="qa-btn" onclick="openStudentAdd()">
-                <div class="qa-btn-icon">🎓</div>
-                <div class="qa-btn-label">Add Student</div>
-                <div class="qa-btn-sub">Register new student</div>
-              </button>
-              <button class="qa-btn" onclick="showPage('faces')">
-                <div class="qa-btn-icon">📸</div>
-                <div class="qa-btn-label">Face Enroll</div>
-                <div class="qa-btn-sub">Upload face photos</div>
-              </button>
-              <button class="qa-btn" onclick="downloadSchoolExcel()">
-                <div class="qa-btn-icon">📥</div>
-                <div class="qa-btn-label">Download Excel</div>
-                <div class="qa-btn-sub">Today's full report</div>
-              </button>
-            </div>
+    <!-- ROW 2: Class Bars + Class Chart -->
+    <div class="dash-grid" style="margin-bottom:18px;">
+      <div class="card">
+        <div class="card-head">
+          <div><h3>🏫 Class Performance</h3><p class="meta">Today's attendance rate per class</p></div>
+          <button class="btn" onclick="showPage('reports')" style="font-size:11px;padding:5px 12px;">View All →</button>
+        </div>
+        <div class="card-body">
+          <div style="height:200px;position:relative;"><canvas id="classBarChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>⚡ Quick Actions</h3><span class="meta">Admin tools</span></div>
+        <div class="card-body">
+          <div class="quick-actions">
+            <button class="qa-btn" onclick="openTeacherAdd()">
+              <div class="qa-btn-icon">👨‍🏫</div>
+              <div class="qa-btn-label">Add Teacher</div>
+              <div class="qa-btn-sub">Create login</div>
+            </button>
+            <button class="qa-btn" onclick="openStudentAdd()">
+              <div class="qa-btn-icon">🎓</div>
+              <div class="qa-btn-label">Add Student</div>
+              <div class="qa-btn-sub">Enroll new</div>
+            </button>
+            <button class="qa-btn" onclick="showPage('faces')">
+              <div class="qa-btn-icon">📸</div>
+              <div class="qa-btn-label">Face Enroll</div>
+              <div class="qa-btn-sub">Upload photos</div>
+            </button>
+            <button class="qa-btn" onclick="downloadSchoolExcel()">
+              <div class="qa-btn-icon">📥</div>
+              <div class="qa-btn-label">Export Excel</div>
+              <div class="qa-btn-sub">Today's data</div>
+            </button>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div class="card">
-          <div class="card-head"><h3>Recent Students</h3><span class="meta">${students.length} total</span></div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Name</th><th>Class</th><th>Status</th></tr></thead>
-              <tbody>
-                ${[...students].reverse().slice(0,5).map(s=>`<tr>
-                  <td><strong>${esc(s.name)}</strong></td>
-                  <td>${esc(s.class_name||'—')}${s.section?'-'+esc(s.section):''}</td>
-                  <td><span class="badge badge-green">Enrolled</span></td>
-                </tr>`).join('')||'<tr><td colspan="3"><div class="empty">No students yet.</div></td></tr>'}
-              </tbody>
-            </table>
-          </div>
-        </div>
+    <!-- ROW 3: Recent Students -->
+    <div class="card">
+      <div class="card-head"><h3>👥 Recent Students</h3><span class="meta">${students.length} total enrolled</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Class</th><th>Section</th><th>Status</th></tr></thead>
+          <tbody>
+            ${[...students].reverse().slice(0,6).map(s=>`<tr>
+              <td><strong>${esc(s.name)}</strong></td>
+              <td>${esc(s.class_name||'—')}</td>
+              <td>${esc(s.section||'—')}</td>
+              <td><span class="badge badge-green">Enrolled</span></td>
+            </tr>`).join('')||'<tr><td colspan="4"><div class="empty">No students yet.</div></td></tr>'}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>`;
-  /* animate bars */
+
+  // Render charts after DOM is ready
   setTimeout(()=>{
-    document.querySelectorAll('.cc-fill').forEach(el=>{
-      const w=el.style.width;el.style.width='0';
-      setTimeout(()=>el.style.width=w,50);
-    });
-  },100);
+    drawTrendChart(monthlyLabels, monthlyValues);
+    drawDonutChart(totalP, totalA);
+    drawClassBarChart();
+  }, 80);
 }
+
+function drawTrendChart(labels, values){
+  const canvas = document.getElementById('trendChart');
+  if(!canvas) return;
+  destroyChart('trend');
+  const dark = document.documentElement.getAttribute('data-theme')==='dark';
+  const textColor = dark ? '#8ea9cf' : '#5a6e8a';
+  const gridColor = dark ? 'rgba(59,130,246,.08)' : 'rgba(21,71,192,.06)';
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0,0,0,200);
+  grad.addColorStop(0,'rgba(29,106,229,.35)');
+  grad.addColorStop(1,'rgba(29,106,229,.01)');
+  _chartInstances['trend'] = new Chart(ctx,{
+    type:'line',
+    data:{
+      labels: labels.length ? labels : ['No data'],
+      datasets:[{label:'Present',data:values.length?values:[0],borderColor:'#1d6ae5',backgroundColor:grad,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#1d6ae5',fill:true,tension:.4}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:([i])=>i.label,label:i=>`${i.raw} present`}}},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:9},maxTicksLimit:8}},
+        y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:9}},beginAtZero:true}
+      }
+    }
+  });
+}
+
+function drawDonutChart(present, absent){
+  const canvas = document.getElementById('donutChart');
+  if(!canvas) return;
+  destroyChart('donut');
+  const dark = document.documentElement.getAttribute('data-theme')==='dark';
+  const ctx = canvas.getContext('2d');
+  _chartInstances['donut'] = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['Present','Absent'],
+      datasets:[{data:[present||0,absent||0],backgroundColor:['#1d6ae5','#dc2626'],borderWidth:0,hoverOffset:6}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'70%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:i=>`${i.label}: ${i.raw}`}}
+      }
+    }
+  });
+}
+
+function drawClassBarChart(){
+  const canvas = document.getElementById('classBarChart');
+  if(!canvas || !classData.length) return;
+  destroyChart('classbar');
+  const dark = document.documentElement.getAttribute('data-theme')==='dark';
+  const textColor = dark ? '#8ea9cf' : '#5a6e8a';
+  const gridColor = dark ? 'rgba(59,130,246,.08)' : 'rgba(21,71,192,.06)';
+  const ctx = canvas.getContext('2d');
+  const labels = classData.map(g=>`${g.class_name||'?'}-${g.section||'?'}`);
+  const values = classData.map(g=>Number(g.attendance_rate||0));
+  const colors = values.map(v => v>=85?'rgba(29,106,229,.85)':v>=60?'rgba(245,158,11,.85)':'rgba(220,38,38,.85)');
+  _chartInstances['classbar'] = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{label:'Attendance %',data:values,backgroundColor:colors,borderRadius:6,borderSkipped:false}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>`${Math.round(i.raw)}% attendance`}}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:textColor,font:{size:9}}},
+        y:{max:100,grid:{color:gridColor},ticks:{color:textColor,font:{size:9},callback:v=>v+'%'},beginAtZero:true}
+      }
+    }
+  });
+}
+function switchTrendChart(period){ /* future: 7day / month toggle */ }
 
 /* ════════════════════════
    TEACHERS
@@ -1621,9 +1812,13 @@ function downloadRoster(){
   toast('Roster export started.');
 }
 
-/* clos
-e modal on bg click */
+
+/* clos modal on bg click */
 document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
+
+/* ── PWA INSTALL PROMPT ── */
+let _deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); _deferredInstallPrompt=e; });
 
 boot();
 
