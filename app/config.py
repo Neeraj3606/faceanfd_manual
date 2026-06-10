@@ -50,7 +50,7 @@ SPOOF_MODEL_PATH = os.getenv(
 # ==============================
 _sqlite_path = os.path.join(DATA_DIR, "attendance.db")
 _db_env = (os.getenv("DATABASE_URL") or "").strip()
-DB_URL = _db_env if _db_env.startswith("sqlite:///") else f"sqlite:///{_sqlite_path}"
+DB_URL = _db_env if _db_env else f"sqlite:///{_sqlite_path}"
 
 
 # ==============================
