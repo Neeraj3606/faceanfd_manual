@@ -87,8 +87,17 @@
     .footer a:hover { text-decoration: underline; }
     /* Prevent iOS auto-zoom on input focus (font-size must be >= 16px) */
     @media(max-width:600px){
-      body{padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom));padding-top:calc(16px + env(safe-area-inset-top));align-items:flex-start;}
-      .card{padding:32px 24px 28px;border-radius:20px;}
+      body{
+        padding:16px;
+        padding-top:env(safe-area-inset-top);
+        padding-bottom:env(safe-area-inset-bottom);
+        align-items:flex-start;
+      }
+      .card{
+        padding:32px 24px 28px;
+        border-radius:20px;
+        margin-top: max(8vh, 32px); /* Perfectly positions the card below the status bar */
+      }
       .field input{font-size:16px;}
       .btnLogin{font-size:16px;padding:16px;}
       h1{font-size:22px;}
