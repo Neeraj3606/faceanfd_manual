@@ -301,12 +301,12 @@ label.form-label{font-size:10px;font-weight:700;color:var(--text3);text-transfor
 .empty p{font-size:13px;}
 
 /* OVERLAY & MOBILE */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:998;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:998;backdrop-filter:blur(2px);}
 .overlay.open{display:block;}
 @media(max-width:1024px){
   .app{grid-template-columns:1fr;}
   .sidebar{position:fixed;top:0;left:-280px;width:280px;z-index:999;height:100vh;transition:var(--transition);}
-  .sidebar.open{left:0;}
+  .sidebar.open{left:0;box-shadow:4px 0 24px rgba(0,0,0,0.2);}
   .topbar{padding:10px 16px;}
   .hamburger{display:flex;}
   .page-hero{margin:12px 12px 0;padding:16px 18px;}
@@ -314,7 +314,6 @@ label.form-label{font-size:10px;font-weight:700;color:var(--text3);text-transfor
   .stats-grid{grid-template-columns:repeat(2,1fr);}
   .reports-grid{grid-template-columns:1fr;}
   .form-row,.form-row.thirds{grid-template-columns:1fr;}
-  /* Fix face attendance section 2-col layout on tablet */
   #faceSection > div, #enrollSection > div{grid-template-columns:1fr !important;}
 }
 @media(max-width:600px){
@@ -326,14 +325,116 @@ label.form-label{font-size:10px;font-weight:700;color:var(--text3);text-transfor
   .card-head{flex-wrap:wrap;gap:8px;}
   .card-actions{flex-wrap:wrap;gap:6px;}
   .cam-box{aspect-ratio:4/3;}
-  /* Bottom safe area for iPhone notch */
   .sidebar-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom));}
   #toast-wrap{bottom:calc(16px + env(safe-area-inset-bottom));right:12px;left:12px;}
   .toast{max-width:100%;}
-  .btn{min-height:40px;padding:9px 14px;}
+  .btn{min-height:42px;padding:10px 14px;}
   .topbar{padding-top:calc(10px + env(safe-area-inset-top));}
 }
+@media(max-width:480px){
+  body{font-size:12px;}
+  .page-hero{padding:14px 16px;margin:10px 10px 0;border-radius:var(--radius-lg);}
+  .hero-title{font-size:16px;}
+  .hero-sub{font-size:11px;}
+  .stats-grid{gap:8px;}
+  .stat-val{font-size:20px;}
+  .stat-lbl{font-size:9px;}
+  .stat-icon{width:32px;height:32px;font-size:13px;}
+  .card-head{padding:12px 14px;}
+  .card-body{padding:12px;}
+  .card-title{font-size:13px;}
+  .topbar-left h2{font-size:15px;}
+  .topbar-date{display:none;}
+  .topbar-chip{font-size:10px;padding:4px 10px;}
+  .cam-box{aspect-ratio:9/16;border-radius:var(--radius);}
+  .mode-sel{width:100%;}
+  .mode-btn{flex:1;text-align:center;justify-content:center;}
+  .student-row{grid-template-columns:1fr;gap:10px;padding:12px 14px;}
+  .att-btns{gap:4px;width:100%;}
+  .att-btn{flex:1;text-align:center;padding:10px 4px;font-size:10px;min-height:38px;}
+  .table-wrap table{min-width:420px;}
+  .ai-chip{font-size:10px;padding:6px 10px;}
+  .ai-chat-bubble{max-width:96%;font-size:12px;}
+  .form-input,.form-select{font-size:15px;padding:11px 12px;}
+  .btn.sm{min-height:36px;}
+  .content{padding:10px;}
+  /* Reports full width */
+  .reports-grid{grid-template-columns:1fr;}
+  .report-card{padding:16px;}
+}
+
 canvas{display:none;}
+
+/* ══ AI INSIGHTS STYLES ══ */
+.ai-thinking{
+  display:flex;align-items:center;gap:12px;
+  padding:20px;background:linear-gradient(135deg,rgba(26,86,219,0.06),rgba(124,58,237,0.04));
+  border-radius:var(--radius-lg);border:1px solid rgba(26,86,219,0.12);
+}
+.ai-thinking-dots{display:flex;gap:5px;}
+.ai-thinking-dots span{
+  width:8px;height:8px;background:var(--gradient);
+  border-radius:50%;display:inline-block;
+  animation:aiDot 1.4s infinite ease-in-out;
+}
+.ai-thinking-dots span:nth-child(2){animation-delay:0.2s;}
+.ai-thinking-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes aiDot{0%,80%,100%{transform:scale(0.7);opacity:0.5}40%{transform:scale(1.1);opacity:1}}
+.ai-thinking-text{font-size:13px;font-weight:600;color:var(--blue-600);font-family:'JetBrains Mono',monospace;}
+.ai-insight-block{
+  background:linear-gradient(135deg,rgba(26,86,219,0.04),rgba(124,58,237,0.03));
+  border:1px solid rgba(26,86,219,0.1);
+  border-radius:var(--radius-lg);padding:18px 20px;
+  font-size:13.5px;line-height:1.7;color:var(--text);
+  position:relative;overflow:hidden;
+}
+.ai-insight-block::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--gradient);
+}
+.ai-bullet{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;}
+.ai-bullet:last-child{margin-bottom:0;}
+.ai-bullet-icon{width:20px;height:20px;background:var(--gradient);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.ai-bullet-icon i{font-size:8px;color:#fff;}
+.ai-bullet-text{flex:1;}
+.ai-stat-mini{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:14px 16px;
+  text-align:center;
+}
+.ai-stat-mini-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-family:'JetBrains Mono',monospace;}
+.ai-stat-mini-val{font-size:24px;font-weight:700;color:var(--text);font-family:'Space Grotesk',sans-serif;}
+.ai-chat-msg{display:flex;flex-direction:column;gap:3px;}
+.ai-chat-msg.user{align-items:flex-end;}
+.ai-chat-msg.bot{align-items:flex-start;}
+.ai-chat-bubble{
+  max-width:88%;padding:10px 14px;border-radius:12px;
+  font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;
+}
+.ai-chat-msg.user .ai-chat-bubble{
+  background:var(--gradient);color:#fff;
+  border-bottom-right-radius:3px;
+}
+.ai-chat-msg.bot .ai-chat-bubble{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  border-bottom-left-radius:3px;
+}
+.ai-chat-label{font-size:10px;font-weight:600;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:2px;padding:0 4px;}
+.ai-chip{
+  padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2);
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);
+  white-space:nowrap;
+}
+.ai-chip:hover{
+  background:linear-gradient(135deg,rgba(26,86,219,0.1),rgba(124,58,237,0.08));
+  border-color:var(--blue-500);color:var(--blue-600);
+}
+[data-dark] .ai-insight-block{background:rgba(26,86,219,0.06);border-color:rgba(26,86,219,0.18);color:var(--text);}
+[data-dark] .ai-stat-mini{background:var(--surface2);border-color:var(--border);}
+[data-dark] .ai-chat-msg.bot .ai-chat-bubble{background:var(--surface2);border-color:var(--border);color:var(--text);}
+[data-dark] .ai-chip{background:var(--surface2);border-color:var(--border);color:var(--text2);}
+[data-dark] .ai-thinking{background:rgba(26,86,219,0.08);border-color:rgba(26,86,219,0.18);}
 </style>
 </head>
 <body>
@@ -387,6 +488,13 @@ canvas{display:none;}
       <div class="nav-label">Reports</div>
       <button class="nav-btn" data-tab="reports" onclick="goTab('reports')">
         <i class="nav-icon fas fa-file-export"></i><span>Reports & Export</span>
+      </button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Intelligence</div>
+      <button class="nav-btn" data-tab="ai" onclick="goTab('ai')" id="aiNavBtn">
+        <i class="nav-icon fas fa-robot"></i><span>AI Insights</span>
+        <span id="aiNavBadge" style="display:none;margin-left:auto;background:linear-gradient(135deg,#7c3aed,#1a56db);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;font-family:'JetBrains Mono',monospace;">NEW</span>
       </button>
     </div>
   </nav>
@@ -763,6 +871,101 @@ canvas{display:none;}
       </div>
     </div>
 
+    <!-- ══════════════════════════════════════════
+         AI INSIGHTS SECTION
+    ══════════════════════════════════════════ -->
+    <div class="section" id="aiSection">
+
+      <!-- Status bar -->
+      <div id="aiStatusBar" style="display:none;margin-bottom:16px;padding:10px 16px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);color:#dc2626;">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span id="aiStatusMsg">AI Insights is not configured. Add your GROK_API_KEY to .env</span>
+      </div>
+
+      <!-- Auto Insights Card -->
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-head" style="background:linear-gradient(135deg,rgba(26,86,219,0.08),rgba(124,58,237,0.06));">
+          <div>
+            <div class="card-title" style="gap:10px;">
+              <span style="width:32px;height:32px;background:linear-gradient(135deg,#1a56db,#7c3aed);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:14px;"><i class="fas fa-wand-magic-sparkles"></i></span>
+              AI Class Analysis
+            </div>
+            <div class="card-sub">Auto-generated insights for your class — powered by Grok AI</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn sm" onclick="loadAIInsights()" id="aiRefreshBtn">
+              <i class="fas fa-rotate"></i> Refresh
+            </button>
+          </div>
+        </div>
+        <div class="card-body" id="aiInsightBody">
+          <div class="ai-thinking" id="aiThinking" style="display:none;">
+            <div class="ai-thinking-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="ai-thinking-text">Grok is analyzing your class data...</span>
+          </div>
+          <div id="aiInsightContent">
+            <div class="empty"><i class="fas fa-robot"></i><p>Click Refresh to generate AI insights for your class</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Row -->
+      <div id="aiQuickStats" style="display:none;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
+        <div class="ai-stat-mini" id="aiStatTotal">
+          <div class="ai-stat-mini-label">Total Students</div>
+          <div class="ai-stat-mini-val">—</div>
+        </div>
+        <div class="ai-stat-mini" id="aiStatPresent">
+          <div class="ai-stat-mini-label">Present Today</div>
+          <div class="ai-stat-mini-val">—</div>
+        </div>
+        <div class="ai-stat-mini" id="aiStatDefaulters">
+          <div class="ai-stat-mini-label">Below 75%</div>
+          <div class="ai-stat-mini-val">—</div>
+        </div>
+      </div>
+
+      <!-- Chat Card -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title"><i class="fas fa-comments"></i> Ask AI About Your Class</div>
+            <div class="card-sub">Ask anything about attendance, students, or trends</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Chat history -->
+          <div id="aiChatHistory" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;margin-bottom:14px;padding:4px 0;"></div>
+
+          <!-- Input row -->
+          <div style="display:flex;gap:10px;align-items:flex-end;">
+            <div style="flex:1;">
+              <input class="form-input" id="aiChatInput"
+                placeholder="e.g. Who was absent most this week? Which students need attention?"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIChat();}"
+                style="min-height:44px;"/>
+            </div>
+            <button class="btn primary" onclick="sendAIChat()" id="aiChatSendBtn" style="min-height:44px;padding:10px 20px;">
+              <i class="fas fa-paper-plane"></i> Ask
+            </button>
+          </div>
+
+          <!-- Suggested questions -->
+          <div style="margin-top:12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;">Quick Questions</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="ai-chip" onclick="askSuggested('Who was absent today?')">Who was absent today?</button>
+              <button class="ai-chip" onclick="askSuggested('Which students are below 75% attendance?')">Students below 75%?</button>
+              <button class="ai-chip" onclick="askSuggested('What is the weekly attendance trend?')">Weekly trend?</button>
+              <button class="ai-chip" onclick="askSuggested('Which student missed the most days this month?')">Most absences?</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /aiSection -->
+
   </div><!-- /content -->
 </main>
 </div><!-- /app -->
@@ -772,7 +975,17 @@ canvas{display:none;}
 
 <script>
 const API = window.location.origin;
-let token = localStorage.getItem('token') || '';
+
+// ─── SECURITY: Force logout on back-button / page restore ───
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted) {
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    window.location.replace('/static/login.html');
+  }
+});
+
+let token = sessionStorage.getItem('token') || '';
 let state = {
   user: null,
   students: [],
@@ -781,7 +994,7 @@ let state = {
   faceStream: null,
   photos: [],
   manData: {},
-  facingMode: localStorage.getItem('facingMode') || 'user'
+  facingMode: localStorage.getItem('facingMode') || 'user'  // camera preference can stay in localStorage
 };
 
 const MAX_PHOTOS = 15;
@@ -813,7 +1026,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (fixInsecureHostForCamera()) return;
-  if (!token) { window.location.href = 'login.html'; return; }
+  if (!token) { window.location.replace('/static/login.html'); return; }
   setToday();
   initDates();
   loadUser().then(() => {
@@ -824,9 +1037,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }).catch((e) => {
     toast('Session expired. Please login again.','warning');
     console.error('loadUser failed:', e);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setTimeout(()=>{ window.location.href = 'login.html'; }, 400);
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    setTimeout(()=>{ window.location.replace('/static/login.html'); }, 400);
   });
   checkDark();
 });
@@ -1395,7 +1608,8 @@ const tabMeta = {
   manage:{title:'Manage Students',sub:'View and delete students from your class',chip:'Students'},
   face:{title:'Face Attendance',sub:'Live face recognition attendance',chip:'Live'},
   manual:{title:'Manual Attendance',sub:'Mark attendance for each student',chip:'Manual'},
-  reports:{title:'Reports & Export',sub:'Download attendance reports',chip:'Reports'}
+  reports:{title:'Reports & Export',sub:'Download attendance reports',chip:'Reports'},
+  ai:{title:'AI Insights',sub:'Grok-powered attendance intelligence',chip:'AI ✨'}
 };
 
 function goTab(tab){
@@ -1414,6 +1628,7 @@ function goTab(tab){
   if(tab==='dashboard') loadDashboard();
   if(tab==='manage') loadManageStudents();
   if(tab==='reports') {}
+  if(tab==='ai') { checkAIStatus().then(ok => { if(ok) loadAIInsights(); }); }
 }
 
 /* ---- HELPERS ---- */
@@ -1495,8 +1710,142 @@ function closeSidebar(){document.getElementById('sidebar').classList.remove('ope
 /* ---- LOGOUT ---- */
 function logout(){
   stopFaceCam();stopWebcam();
-  localStorage.removeItem('token');localStorage.removeItem('user');
-  window.location.href='login.html?logout=1';
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('user');
+  window.location.replace('/static/login.html');
+}
+
+/* ════════════════════════════════════════
+   AI INSIGHTS — Teacher
+════════════════════════════════════════ */
+let aiChatHistory = [];
+
+async function checkAIStatus() {
+  try {
+    const r = await fetch(`${API}/ai/status`, { headers: { Authorization: `Bearer ${token}` } });
+    const d = await r.json();
+    const bar = document.getElementById('aiStatusBar');
+    const badge = document.getElementById('aiNavBadge');
+    if (!d.configured) {
+      bar.style.display = 'flex';
+      document.getElementById('aiStatusMsg').textContent = '⚠️ AI Insights not configured. Add GROK_API_KEY to .env and restart the server.';
+    } else {
+      bar.style.display = 'none';
+      if (badge) badge.style.display = 'inline-block';
+    }
+    return d.configured;
+  } catch(e) { return false; }
+}
+
+async function loadAIInsights() {
+  const btn = document.getElementById('aiRefreshBtn');
+  const thinking = document.getElementById('aiThinking');
+  const content = document.getElementById('aiInsightContent');
+  const quickStats = document.getElementById('aiQuickStats');
+
+  btn.disabled = true;
+  thinking.style.display = 'flex';
+  content.style.display = 'none';
+
+  try {
+    const r = await fetch(`${API}/ai/insights`, { headers: { Authorization: `Bearer ${token}` } });
+    const d = await r.json();
+
+    thinking.style.display = 'none';
+    content.style.display = 'block';
+
+    if (!d.ok || !d.configured) {
+      content.innerHTML = `<div class="result-box error"><i class="fas fa-triangle-exclamation" style="font-size:18px;"></i><div><div class="result-text">AI not configured</div><div class="result-detail">${d.message || 'Please add GROK_API_KEY to .env'}</div></div></div>`;
+      return;
+    }
+
+    // Render insight bullets
+    const raw = (d.insight || '').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l);
+    let html = '<div class="ai-insight-block">';
+    lines.forEach(line => {
+      const clean = line.replace(/^[•\-*]\s*/, '');
+      html += `<div class="ai-bullet"><div class="ai-bullet-icon"><i class="fas fa-sparkles"></i></div><div class="ai-bullet-text">${clean}</div></div>`;
+    });
+    html += '</div>';
+    content.innerHTML = html;
+
+    // Quick stats
+    if (d.context_summary) {
+      const cs = d.context_summary;
+      quickStats.style.display = 'grid';
+      document.getElementById('aiStatTotal').querySelector('.ai-stat-mini-val').textContent = cs.total_students ?? '—';
+      document.getElementById('aiStatPresent').querySelector('.ai-stat-mini-val').textContent =
+        cs.present_today !== undefined ? `${cs.present_today} (${cs.attendance_pct_today}%)` : '—';
+      document.getElementById('aiStatDefaulters').querySelector('.ai-stat-mini-val').textContent = cs.defaulters_count ?? '—';
+    }
+  } catch(e) {
+    thinking.style.display = 'none';
+    content.style.display = 'block';
+    content.innerHTML = `<div class="result-box error"><i class="fas fa-triangle-exclamation" style="font-size:18px;"></i><div><div class="result-text">Error loading insights</div><div class="result-detail">${e.message}</div></div></div>`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderChatBubble(text, role) {
+  const wrap = document.getElementById('aiChatHistory');
+  const div = document.createElement('div');
+  div.className = `ai-chat-msg ${role}`;
+  const label = document.createElement('div');
+  label.className = 'ai-chat-label';
+  label.textContent = role === 'user' ? '🧑 You' : '🤖 Grok';
+  const bubble = document.createElement('div');
+  bubble.className = 'ai-chat-bubble';
+  // Strip markdown bold/headers
+  const clean = text.replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
+  bubble.textContent = clean;
+  div.appendChild(label);
+  div.appendChild(bubble);
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return bubble;
+}
+
+async function sendAIChat() {
+  const input = document.getElementById('aiChatInput');
+  const btn = document.getElementById('aiChatSendBtn');
+  const q = input.value.trim();
+  if (!q) return;
+
+  input.value = '';
+  btn.disabled = true;
+  renderChatBubble(q, 'user');
+
+  // Thinking bubble
+  const wrap = document.getElementById('aiChatHistory');
+  const thinkDiv = document.createElement('div');
+  thinkDiv.className = 'ai-chat-msg bot';
+  thinkDiv.innerHTML = `<div class="ai-chat-label">🤖 Grok</div><div class="ai-chat-bubble" style="display:flex;align-items:center;gap:8px;"><div class="ai-thinking-dots"><span></span><span></span><span></span></div><span style="font-size:12px;color:var(--blue-600);font-family:\'JetBrains Mono\',monospace;">Thinking...</span></div>`;
+  wrap.appendChild(thinkDiv);
+  wrap.scrollTop = wrap.scrollHeight;
+
+  try {
+    const r = await fetch(`${API}/ai/chat`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q }),
+    });
+    const d = await r.json();
+    wrap.removeChild(thinkDiv);
+    renderChatBubble(d.answer || d.message || 'No response', 'bot');
+  } catch(e) {
+    wrap.removeChild(thinkDiv);
+    renderChatBubble('Sorry, something went wrong: ' + e.message, 'bot');
+  } finally {
+    btn.disabled = false;
+    input.focus();
+  }
+}
+
+function askSuggested(q) {
+  document.getElementById('aiChatInput').value = q;
+  sendAIChat();
 }
 
 /* ---- PWA ---- */

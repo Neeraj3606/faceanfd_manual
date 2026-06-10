@@ -310,11 +310,11 @@ def change_password(
 # =========================
 @router.post("/setup-admin")
 def setup_admin(
-    username: str = Form("admin@gmail.com"),
-    password: str = Form("admin123"),
+    username: str = Form("superadmin@gmail.com"),
+    password: str = Form("superadmin123"),
     db: Session = Depends(get_db)
 ):
-    """Create default admin user (one-time setup, only works if no users exist)"""
+    """Create default super admin user (one-time setup, only works if no users exist)"""
     # Check if any users exist
     if db.query(User).first():
         raise HTTPException(
@@ -322,12 +322,19 @@ def setup_admin(
             detail="Setup already completed. Use admin panel to create users."
         )
     
-    # Create admin user
+    # Validate credentials
+    if len(password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters"
+        )
+
+    # Create super admin user
     admin_user = User(
         username=username,
         email=username,
         hashed_password=get_password_hash(password),
-        full_name="System Administrator",
+        full_name="Super Administrator",
         role="SUPER_ADMIN",
         school_name="",
         is_active=True,
@@ -341,36 +348,39 @@ def setup_admin(
     
     return {
         "ok": True,
-        "message": "Admin user created successfully",
+        "message": "Super Admin created. Login with superadmin@gmail.com and your password.",
         "username": username,
-        "password": password
     }
 
 
 # =========================
 # Create School Admin (Super Admin only)
 # =========================
-SUPER_ADMIN_SECRET = "superadmin_secret_2024"  # Must match super_admin.html
+# SUPER_ADMIN_SECRET — must be set via environment variable SUPER_ADMIN_SECRET.
+# Never hardcode this in source code. Change it immediately if exposed.
+SUPER_ADMIN_SECRET = os.environ.get("SUPER_ADMIN_SECRET", "")
+if not SUPER_ADMIN_SECRET:
+    import secrets as _secrets
+    SUPER_ADMIN_SECRET = _secrets.token_hex(32)  # random per-process if not configured
 
 @router.post("/create-school-admin")
 def create_school_admin(
-    secret: str = Form(...),
     username: str = Form(...),
     password: str = Form(...),
     school_name: str = Form(""),
     db: Session = Depends(get_db),
     admin: User = Depends(get_admin_user),
 ):
-    """Create a school admin called by Super Admin dashboard"""
+    """Create a school admin — requires JWT with SUPER_ADMIN role."""
     if user_role(admin) != "SUPER_ADMIN":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Super admin only",
         )
-    if secret != SUPER_ADMIN_SECRET:
+    if len(password) < 8:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid super admin secret"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters",
         )
     if db.query(User).filter(User.username == username).first():
         raise HTTPException(
@@ -418,12 +428,14 @@ def create_school_admin(
 # =========================
 # Super Admin Stats
 # =========================
-SUPER_ADMIN_SECRET_KEY = "superadmin_secret_2024"
+SUPER_ADMIN_SECRET_KEY = SUPER_ADMIN_SECRET  # Reuse same env-backed secret
 
 @router.get("/super-stats")
 def super_stats(secret: str, db: Session = Depends(get_db)):
-    """Get platform stats for super admin (legacy secret-key auth)"""
-    if secret != SUPER_ADMIN_SECRET_KEY:
+    """Get platform stats — legacy secret-key auth (deprecated, prefer /super-stats-full with JWT)."""
+    # Constant-time comparison to prevent timing attacks
+    import hmac
+    if not hmac.compare_digest(secret, SUPER_ADMIN_SECRET_KEY):
         raise HTTPException(status_code=403, detail="Forbidden")
     from app.models import Student, Attendance
     return {

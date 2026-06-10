@@ -237,7 +237,7 @@ def identify_from_image_array(img_bgr: np.ndarray, students: Dict[str, Dict[str,
 # Health
 # ==============================
 @router.get("/health")
-def health():
+def health(current_user: User = Depends(get_current_user)):
     ensure_dirs()
     return {
         "ok": True,
@@ -246,9 +246,13 @@ def health():
         "recognition": get_face_engine_status(init=True),
         "liveness": get_liveness_status(init=True),
         "antispoofing": get_antispoofing_engine_status(),
-        "uploads_dir": UPLOADS_DIR,
-        "encodings_file": ENCODINGS_FILE,
     }
+
+
+@router.get("/health/public")
+def health_public():
+    """Public health check — no internal details exposed."""
+    return {"ok": True, "service": "face-attendance"}
 
 
 # ==============================
@@ -1288,3 +1292,71 @@ def analytics_defaulters(
 
     defaulters.sort(key=lambda x: x["percentage"])
     return {"ok": True, "defaulters": defaulters, "threshold": threshold}
+
+
+# ==============================
+# AI Insights (Grok-powered)
+# ==============================
+
+@router.get("/ai/insights")
+def ai_insights(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Auto-generate attendance insights using Grok AI.
+    Role-aware: Teacher gets class-level insights, Admin gets school-wide insights.
+    """
+    from app.ai_insights import generate_insights, grok_available
+    if not grok_available():
+        return {
+            "ok": False,
+            "message": "AI Insights is not configured. Please add GROK_API_KEY to your .env file and restart the server.",
+            "configured": False,
+        }
+    result = generate_insights(db=db, current_user=current_user)
+    result["configured"] = True
+    return result
+
+
+class AIChatRequest:
+    question: str
+
+
+@router.post("/ai/chat")
+def ai_chat(
+    payload: dict = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Free-form Q&A about attendance data using Grok AI.
+    Role-aware: answers are scoped to the user's school/class.
+    """
+    from app.ai_insights import answer_question, grok_available
+    question = (payload.get("question") or "").strip()
+    if not question:
+        return {"ok": False, "message": "Please provide a question."}
+    if not grok_available():
+        return {
+            "ok": False,
+            "message": "AI Insights is not configured. Please add GROK_API_KEY to your .env file and restart the server.",
+            "configured": False,
+        }
+    result = answer_question(db=db, current_user=current_user, question=question)
+    result["configured"] = True
+    return result
+
+
+@router.get("/ai/status")
+def ai_status(
+    current_user: User = Depends(get_current_user),
+):
+    """Check whether AI Insights (Grok) is configured."""
+    from app.ai_insights import grok_available, ai_model_name
+    return {
+        "ok": True,
+        "configured": grok_available(),
+        "model": "Grok",
+        "message": f"AI Insights is active using {ai_model_name()}." if grok_available() else "Add GROK_API_KEY to .env to enable AI Insights.",
+    }

@@ -2,11 +2,16 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="FaceAtt Admin"/>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Super Admin — Attendance Platform v2.1</title>
+
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 :root {
@@ -550,17 +555,71 @@ code{
 @media(max-width:1100px){
   .stats{grid-template-columns:repeat(2,1fr);}
   .info-grid{grid-template-columns:1fr;}
+  .main{padding:28px 24px;}
 }
 @media(max-width:768px){
-  .sidebar{transform:translateX(-100%);width:260px;}
-  .sidebar.open{transform:translateX(0);}
+  .sidebar{transform:translateX(-100%);width:260px;box-shadow:none;transition:transform .28s ease,box-shadow .28s ease;}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 32px rgba(0,0,0,0.3);}
   .main{margin-left:0;padding:20px 18px;}
   .menu-btn{display:flex;}
   .fg{grid-template-columns:1fr;}
   .stats{grid-template-columns:1fr 1fr;gap:12px;}
-  .topbar{padding:0 18px;}
+  .topbar{padding:0 16px;}
+  .ph h2{font-size:24px;}
+  .info-grid{grid-template-columns:1fr;}
+  .type-tabs{flex-wrap:wrap;}
+  .card-head{flex-wrap:wrap;gap:8px;}
 }
-@media(max-width:480px){.stats{grid-template-columns:1fr;}}
+@media(max-width:480px){
+  /* Topbar safe area */
+  .topbar{height:auto;min-height:56px;padding:calc(8px + env(safe-area-inset-top)) 14px 8px;}
+  .layout{padding-top:calc(56px + env(safe-area-inset-top));}
+  .sidebar{top:calc(56px + env(safe-area-inset-top));}
+  .brand-name{font-size:15px;}
+  .brand-sub{display:none;}
+  .sa-badge{font-size:9px;padding:3px 8px;}
+  /* Sidebar safe area bottom */
+  .sb-footer{padding-bottom:calc(14px + env(safe-area-inset-bottom));}
+  /* Main */
+  .main{padding:16px 14px;padding-bottom:calc(20px + env(safe-area-inset-bottom));}
+  /* Page headers */
+  .ph h2{font-size:22px;}
+  .ph p{font-size:12px;}
+  .ph-row{flex-direction:column;align-items:flex-start;gap:10px;}
+  /* Stats: single column on very small */
+  .stats{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .sc{padding:18px 16px 16px;}
+  .sc-val{font-size:30px;}
+  .sc-lbl{font-size:9px;}
+  .sc-icon{width:28px;height:28px;font-size:13px;margin-bottom:12px;}
+  /* Cards */
+  .card-body{padding:16px;}
+  .card-head{padding:14px 16px;}
+  .card-head h3{font-size:13.5px;}
+  /* Info boxes */
+  .info-grid{grid-template-columns:1fr;}
+  .ib-val{font-size:28px;}
+  /* Form */
+  .fg{grid-template-columns:1fr;gap:12px;}
+  .field input,.field select{font-size:16px;padding:12px 14px;}
+  /* Buttons */
+  .btn{min-height:44px;padding:11px 18px;font-size:13px;}
+  .btn-full{width:100%;justify-content:center;}
+  /* Table */
+  .tw table{min-width:480px;}
+  td{padding:11px 12px;font-size:12px;}
+  th{padding:10px 12px;}
+  /* Tabs */
+  .type-tabs{gap:6px;}
+  .type-tab{font-size:11px;padding:6px 12px;}
+  /* Overlay */
+  #ov{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+}
+@media(max-width:360px){
+  .stats{grid-template-columns:1fr;}
+  .sc-val{font-size:26px;}
+}
+
 </style>
 </head>
 <body>
@@ -886,34 +945,35 @@ code{
 
 <script>
 const API = window.location.origin;
-const _tok = localStorage.getItem('token') || '';
-const _usr = (() => { try { return JSON.parse(localStorage.getItem('user')||'{}'); } catch { return {}; } })();
+
+// ─── SECURITY: Force logout on back-button / page restore ───
+// If page is loaded from bfcache (back/forward navigation), clear session and redirect
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted) {
+    // Page loaded from back-forward cache — treat as logout
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    window.location.replace('/static/login.html');
+  }
+});
+
+const _tok = sessionStorage.getItem('token') || '';
+const _usr = (() => { try { return JSON.parse(sessionStorage.getItem('user')||'{}'); } catch { return {}; } })();
 const _uname = _usr.username || 'superadmin';
 let _platform = { platform:{}, schools:[], users:[] };
 
-// Debug: Log authentication info
-console.log('=== Super Admin Authentication Debug ===');
-console.log('Token exists:', !!_tok);
-console.log('Token preview:', _tok ? _tok.substring(0, 20) + '...' : 'NONE');
-console.log('User data:', _usr);
-console.log('User role:', _usr.role);
-console.log('Is super admin:', _usr.is_super_admin);
-console.log('========================================');
-
-// Check authentication on page load
+// Auth check on page load
 if (!_tok || _tok === 'demo') {
-  console.error('No valid token found. Redirecting to login...');
-  alert('⚠ No authentication token found. Please login first.');
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  window.location.href = '/static/login.html';
+  alert('⚠ Session expired. Please login again.');
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('user');
+  window.location.replace('/static/login.html');
 }
 
 // Verify super admin role
 if (_usr.role !== 'SUPER_ADMIN' && !_usr.is_super_admin) {
-  console.error('Not a super admin. Redirecting...');
   alert('⚠ Access denied. Super admin privileges required.');
-  window.location.href = '/static/login.html';
+  window.location.replace('/static/login.html');
 }
 
 ['sa-user','sb-name'].forEach(id => {
@@ -927,7 +987,7 @@ if (sbAv && _uname) sbAv.textContent = _uname.slice(0,2).toUpperCase();
 setTheme(localStorage.getItem('sa_theme') || 'light');
 function setTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
-  localStorage.setItem('sa_theme', t);
+  localStorage.setItem('sa_theme', t);  // theme preference can stay in localStorage
   const dark = t === 'dark';
   document.getElementById('tknob').textContent = dark ? '☀️' : '🌙';
   document.getElementById('tlabel').textContent = dark ? 'Light' : 'Dark';
@@ -1008,9 +1068,9 @@ function getMergedEntities() {
 /* ── LOGOUT ── */
 function doLogout() {
   if (!confirm('Logout from Super Admin?')) return;
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  window.location.href = '/static/login.html';
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('user');
+  window.location.replace('/static/login.html');
 }
 
 /* ── COUNTER ANIMATION ── */
@@ -1036,9 +1096,9 @@ async function loadAll() {
     if (r.status === 401) {
       console.error('Authentication failed. Token expired or invalid.');
       alert('⚠ Session expired. Please login again.');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/static/login.html';
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+      window.location.replace('/static/login.html');
       return;
     }
     
@@ -1052,7 +1112,6 @@ async function loadAll() {
     if (r.ok) {
       const d = await r.json();
       _platform = d || { platform:{}, schools:[], users:[] };
-      console.log('Platform data loaded:', _platform);
       
       const ents = getMergedEntities();
       const schools = ents.filter(e => e.type === 'school');
@@ -1072,11 +1131,9 @@ async function loadAll() {
     }
     
     // Other errors
-    console.error('Failed to load data:', r.status, r.statusText);
     throw new Error('Failed to load platform data');
     
   } catch(err) {
-    console.error('Error loading data:', err);
     // Fallback to local data
     const ents = getMergedEntities();
     const schools = ents.filter(e => e.type === 'school');
@@ -1194,8 +1251,8 @@ async function createEntity(type) {
   btn.innerHTML = `Creating <span class="spin"></span>`;
 
   try {
+    // Auth is via JWT Bearer token. Server validates SUPER_ADMIN role from the token.
     const body = new URLSearchParams({
-      secret: 'superadmin_secret_2024',
       username: user,
       password: pass,
       school_name: name  // Backend expects school_name for both schools and companies

@@ -21,23 +21,26 @@ data/models/
 *.h5
 *.pb
 
-# Database
+# Database (IMPORTANT - Contains user data!)
 *.db
 *.sqlite
 *.sqlite3
 data/attendance.db
+data/
 
 # Encodings
 data/encodings.pkl
 *.pkl
 
-# User Uploads
+# User Uploads (IMPORTANT - Contains face photos!)
 uploads/
 data/matplotlib/
 
-# Environment variables
+# Environment variables (NEVER commit these!)
 .env
 .env.local
+.env.production
+.env.staging
 
 # IDE
 .vscode/
@@ -58,7 +61,15 @@ logs/
 *.xlsx
 *.xls
 
-# Test files
+# Test/debug files
 test_*.py
 debug_*.py
 verify_*.py
+scratch/
+
+# System service file
+face-attendance.service
+
+# Temp files
+*.tmp
+*.bak

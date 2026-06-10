@@ -114,7 +114,7 @@ def _run_migrations():
         conn.execute(text("UPDATE users SET role='ADMIN' WHERE is_super_admin=0 AND is_admin=1"))
         conn.execute(text("UPDATE users SET role='TEACHER' WHERE is_super_admin=0 AND is_admin=0"))
         conn.execute(text("UPDATE users SET school_name=COALESCE(NULLIF(school_name,''), full_name, '') WHERE role='ADMIN'"))
-        conn.execute(text("UPDATE users SET email='superadmin@faceattend.local' WHERE is_super_admin=1 AND COALESCE(email,'')=''"))
+        conn.execute(text("UPDATE users SET email='superadmin@gmail.com' WHERE is_super_admin=1 AND COALESCE(email,'')=''"))
         conn.execute(text("UPDATE students SET student_code=id WHERE COALESCE(student_code,'')=''"))
         conn.commit()
 
@@ -146,21 +146,29 @@ app = FastAPI(
 from fastapi import Request
 from fastapi.responses import JSONResponse
 import traceback
+import logging
+
+logger = logging.getLogger("face_attendance")
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    # Log full traceback server-side only — NEVER expose to client
+    logger.error("Unhandled exception: %s\n%s", exc, traceback.format_exc())
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal Server Error", "error": str(exc), "trace": traceback.format_exc()}
+        content={"detail": "Internal Server Error"}
     )
 
-# ✅ CORS (client app / browser integration safe)
+# ✅ CORS — read from env variable ALLOWED_ORIGINS (comma-separated list).
+# Default: allow localhost only. Set ALLOWED_ORIGINS=* only for development.
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000").strip()
+_allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # later production me specific domains rakhna
+    allow_origins=_allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 # ✅ Static files (Frontend)

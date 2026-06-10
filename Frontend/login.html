@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1121" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -85,6 +85,18 @@
     .footer { margin-top: 24px; text-align: center; font-size: 12px; color: #4a5a78; }
     .footer a { color: #6ea8ff; text-decoration: none; }
     .footer a:hover { text-decoration: underline; }
+    /* Prevent iOS auto-zoom on input focus (font-size must be >= 16px) */
+    @media(max-width:600px){
+      body{padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom));padding-top:calc(16px + env(safe-area-inset-top));align-items:flex-start;}
+      .card{padding:32px 24px 28px;border-radius:20px;}
+      .field input{font-size:16px;}
+      .btnLogin{font-size:16px;padding:16px;}
+      h1{font-size:22px;}
+    }
+    @media(max-width:380px){
+      .card{padding:28px 18px 24px;}
+      h1{font-size:20px;}
+    }
   </style>
 </head>
 <body>
@@ -121,23 +133,10 @@
 <script>
   const API = window.location.origin;
 
-  // Already logged in? redirect immediately
-  (function(){
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.is_super_admin) {
-        window.location.href = '/static/super_admin.html';
-      } else if ((user.role || '').toUpperCase() === 'ADMIN') {
-        window.location.href = '/static/admin_dashboard.html';
-      } else if ((user.role || '').toUpperCase() === 'TEACHER') {
-        window.location.href = '/static/teacher.html';
-      } else {
-        window.location.href = (user.dashboard_url || '/static/login.html');
-      }
-    } catch(e) { localStorage.clear(); }
-  })();
+  // ─── SECURITY: Always clear session on login page load ───
+  // This ensures that pressing Back from a dashboard always requires re-login
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('user');
 
   function toggleEye() {
     const inp = document.getElementById('password');
@@ -191,16 +190,16 @@
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem('token', data.access_token);
-        localStorage.setItem('user',  JSON.stringify(data.user));
+        // ✅ Use sessionStorage — clears when tab closes or user navigates away
+        sessionStorage.setItem('token', data.access_token);
+        sessionStorage.setItem('user',  JSON.stringify(data.user));
 
         showOk('Login successful! Redirecting…');
 
         setTimeout(() => {
-          window.location.href = (data.user && data.user.dashboard_url) || '/static/teacher.html';
+          window.location.replace((data.user && data.user.dashboard_url) || '/static/teacher.html');
         }, 500);
       } else {
-        // FIXED: parseDetail handles string, array, or object from FastAPI
         showErr(parseDetail(data.detail) || 'Invalid email or password.');
         btn.disabled = false;
         btn.textContent = 'Sign In';
@@ -216,19 +215,22 @@
     e.preventDefault();
     document.getElementById('errMsg').classList.remove('show');
     document.getElementById('okMsg').classList.remove('show');
+
+    const email = prompt('Enter super admin email (default: superadmin@gmail.com):') || 'superadmin@gmail.com';
+    if (!email || !email.includes('@')) { showErr('Valid email required.'); return; }
+    const pw = prompt('Set a strong password (min 8 characters):');
+    if (!pw || pw.length < 8) { showErr('Password must be at least 8 characters.'); return; }
+
+    const fd = new FormData();
+    fd.append('username', email);
+    fd.append('password', pw);
     try {
-      const res  = await fetch(API + '/auth/setup-admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'username=superadmin%40faceattend.local&password=superadmin123'
-      });
+      const res  = await fetch(API + '/auth/setup-admin', { method: 'POST', body: fd });
       const data = await res.json();
       if (res.ok) {
-        showOk('&#9989; Super Admin created!<br>Username: <b>' + data.username + '</b><br>Password: <b>' + data.password + '</b><br><small>Login with these credentials.</small>');
-        document.getElementById('username').value = data.username;
-        document.getElementById('password').value = data.password;
+        showOk('&#9989; Super Admin created!<br>Username: <b>' + (data.username || email) + '</b><br><small>Login with the password you just set.</small>');
+        document.getElementById('username').value = data.username || email;
       } else {
-        // FIXED: parseDetail handles string, array, or object from FastAPI
         showErr(parseDetail(data.detail) || 'Setup failed — admin may already exist.');
       }
     } catch(e) {
