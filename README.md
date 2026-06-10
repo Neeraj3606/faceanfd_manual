@@ -39,7 +39,7 @@ A modern, secure, and commercially-free face recognition-based attendance system
 ## 🛠️ Tech Stack
 
 - **Backend**: FastAPI (Python 3.11)
-- **Database**: SQLite (SQLAlchemy ORM with automatic tables & columns migration on startup)
+- **Database**: PostgreSQL (SQLAlchemy ORM with automatic tables & columns migration on startup)
 - **Face Detection**: YuNet ONNX (MIT License)
 - **Face Recognition**: SFace ONNX (MIT License)
 - **Liveness Detection**: MiniFASNet v2 ONNX
@@ -80,7 +80,7 @@ Create a `.env` file in the root directory (you can copy/rename `.env` if it alr
 ```env
 SECRET_KEY=your_generated_jwt_secret_key
 SUPER_ADMIN_SECRET=your_generated_super_admin_secret_key
-DATABASE_URL=sqlite:///data/attendance.db
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 
 # Face Recognition Settings
 MATCH_THRESHOLD=0.65            # Cosine similarity matching threshold (0.55-0.70)
@@ -137,7 +137,7 @@ face_attendance_updated/
 │   ├── auth_routes.py       # Authentication, user management, and super admin control
 │   ├── auth.py              # JWT authentication & session verification utilities
 │   ├── db.py                # Database connection & session setup
-│   ├── models.py            # SQLAlchemy SQLite schema models (User, Student, Attendance, FaceEncoding)
+│   ├── models.py            # SQLAlchemy PostgreSQL schema models (User, Student, Attendance, FaceEncoding)
 │   ├── encoder.py           # YuNet + SFace face detection & recognition pipeline
 │   ├── liveness.py          # MiniFASNet v2 multi-scale ONNX liveness engine
 │   ├── antispoofing_onnx.py # Secondary texture quality/heuristic checks
@@ -152,7 +152,6 @@ face_attendance_updated/
 │   ├── teacher.html         # Classroom attendance capture and student panel
 │   └── ...                  # Frontend visual styles and assets
 ├── data/
-│   ├── attendance.db        # Live SQLite local database file
 │   └── models/              # Downloaded ONNX model binaries (YuNet, SFace, MiniFASNet)
 ├── uploads/
 │   └── students/            # Structured enrollments directory for student face images
