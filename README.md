@@ -116,7 +116,7 @@ Open `http://localhost:8000` — the root path redirects to the login page.
 
 | Role | Username | Password |
 | :--- | :--- | :--- |
-| Super Admin | `superadmin@gmail.com` | Set via `_ensure_super_admin` on first run |
+| Super Admin | `super_admin` | Set via `_ensure_super_admin` on first run |
 | School Admin | Created by Super Admin | Created by Super Admin |
 | Teacher | Created by School Admin | Created by School Admin |
 
