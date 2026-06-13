@@ -94,16 +94,29 @@ async def lifespan(app: FastAPI):
 
 
 def _ensure_super_admin():
+    import os
     from app.db import SessionLocal
     from app.models import User
     from app.auth import get_password_hash
+
+    # Password is sourced from the environment — never hardcoded.
+    # Configure SUPER_ADMIN_SECRET in .env or Render environment variables.
+    default_password = os.getenv("SUPER_ADMIN_SECRET", "").strip()
+    if not default_password or len(default_password) < 8:
+        import secrets
+        default_password = secrets.token_urlsafe(24)
+        _startup_log.warning(
+            "SUPER_ADMIN_SECRET is not set. A random password was generated for this "
+            "session. Set SUPER_ADMIN_SECRET in your environment for a stable password."
+        )
+
     db = SessionLocal()
     try:
         if not db.query(User).filter(User.is_super_admin == True).first():
             db.add(User(
-                username='superadmin@gmail.com',
-                email='superadmin@gmail.com',
-                hashed_password=get_password_hash('superadmin123'),
+                username='admin@faceattend.local',
+                email='admin@faceattend.local',
+                hashed_password=get_password_hash(default_password),
                 full_name='Super Administrator',
                 role='SUPER_ADMIN',
                 school_name='',
@@ -112,6 +125,10 @@ def _ensure_super_admin():
                 is_super_admin=True,
             ))
             db.commit()
+            _startup_log.info(
+                "Super Admin account created. Login with admin@faceattend.local "
+                "and the value of SUPER_ADMIN_SECRET."
+            )
     finally:
         db.close()
 
@@ -152,7 +169,7 @@ def _run_migrations():
             "UPDATE users SET role='ADMIN' WHERE is_super_admin=FALSE AND is_admin=TRUE AND (role IS NULL OR role='')",
             "UPDATE users SET role='TEACHER' WHERE is_super_admin=FALSE AND is_admin=FALSE AND (role IS NULL OR role='')",
             "UPDATE users SET school_name=COALESCE(NULLIF(school_name,''), full_name, '') WHERE role='ADMIN'",
-            "UPDATE users SET email='superadmin@gmail.com' WHERE is_super_admin=TRUE AND COALESCE(email,'')=''",
+            "UPDATE users SET email='admin@faceattend.local' WHERE is_super_admin=TRUE AND COALESCE(email,'')=''",
             "UPDATE students SET student_code=id WHERE COALESCE(student_code,'')=''",
         ]
         for stmt in update_stmts:

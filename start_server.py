@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Production server startup script with checks
+Local development startup script with pre-flight environment and database checks.
+Not used in Docker/Render deployments — the production entry point is main.py via uvicorn directly.
 """
 
 import os
@@ -9,88 +10,58 @@ import sys
 import subprocess
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-def check_env():
-    """Check required environment variables"""
-    print("🔍 Checking environment variables...")
-    
+
+def check_env() -> bool:
+    """Validate required environment variables before starting."""
     db_url = os.getenv("DATABASE_URL")
     secret_key = os.getenv("SECRET_KEY")
-    
+
     if not db_url:
-        db_url = "sqlite:///data/attendance.db"
-        os.environ["DATABASE_URL"] = db_url
-        print("✅ DATABASE_URL not set, defaulting to SQLite: sqlite:///data/attendance.db")
-    
-    if (
-        not secret_key
-        or secret_key.strip() in {
-            "your-secret-key-here-change-in-production",
-            "change-this-secret-key-in-production",
-            "your-super-secret-key-here",
-        }
-        or len(secret_key.strip()) < 32
-    ):
-        print("❌ SECRET_KEY is missing or insecure!")
-        print("   Run: python generate_secret.py")
-        print("   Then update .env file\n")
+        print("DATABASE_URL is not set. Provide a PostgreSQL connection string in .env.")
         return False
-    else:
-        print("✅ SECRET_KEY is set")
-    
-    if not db_url.lower().startswith("sqlite"):
-        print("❌ Only SQLite is supported.")
-        print("   Set DATABASE_URL=sqlite:///data/attendance.db")
+
+    weak_keys = {
+        "your-secret-key-here-change-in-production",
+        "change-this-secret-key-in-production",
+        "your-super-secret-key-here",
+    }
+    if not secret_key or secret_key.strip() in weak_keys or len(secret_key.strip()) < 32:
+        print(
+            "SECRET_KEY is missing or too short (minimum 32 characters).\n"
+            "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\"\n"
+            "Then add it to your .env file."
+        )
         return False
-    print("✅ SQLite database configured")
-    
+
+    print("Environment variables verified.")
     return True
 
-def test_database_connection():
-    """Test database connection"""
-    print("\n🔍 Testing database connection...")
-    
+
+def test_database_connection() -> bool:
+    """Attempt a lightweight connection to the configured database."""
     try:
         from sqlalchemy import create_engine, text
         from sqlalchemy.exc import OperationalError
-        
+
         db_url = os.getenv("DATABASE_URL")
         engine = create_engine(db_url, pool_pre_ping=True)
-        
+
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        
-        print("✅ Database connection successful!")
+
+        print("Database connection successful.")
         return True
-        
-    except OperationalError as e:
-        print(f"❌ Database connection failed!")
-        print(f"   Error: {e}")
-        print("\n💡 Troubleshooting:")
-        print("   1. Verify DATABASE_URL in .env")
-        print("   2. Ensure data/ directory is writable")
-        return False
-    except Exception as e:
-        print(f"❌ Error: {e}")
+
+    except Exception as exc:
+        print(f"Database connection failed: {exc}")
+        print("Verify DATABASE_URL in .env and ensure the database server is reachable.")
         return False
 
-def create_tables():
-    """Create database tables"""
-    print("\n🔍 Creating database tables...")
-    
-    try:
-        from app.db import engine, Base
-        Base.metadata.create_all(bind=engine)
-        print("✅ Tables created/verified successfully!")
-        return True
-    except Exception as e:
-        print(f"❌ Failed to create tables: {e}")
-        return False
 
 def is_port_available(host: str, port: int) -> bool:
-    """Check whether a TCP port is free for the requested host."""
+    """Return True if the given host/port can be bound."""
     probe_host = "127.0.0.1" if host == "0.0.0.0" else host
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -100,64 +71,52 @@ def is_port_available(host: str, port: int) -> bool:
             return False
     return True
 
+
 def resolve_server_port(host: str, preferred_port: int, search_limit: int = 20) -> int:
-    """Return the requested port when free, otherwise the next available port."""
+    """Return the requested port if available, otherwise find the next free port."""
     if is_port_available(host, preferred_port):
         return preferred_port
 
     for port in range(preferred_port + 1, preferred_port + search_limit + 1):
         if is_port_available(host, port):
-            print(f"⚠️ Port {preferred_port} busy hai, server port {port} par start hoga.")
+            print(f"Port {preferred_port} is in use. Using port {port} instead.")
             return port
 
     raise RuntimeError(
         f"No free port found between {preferred_port} and {preferred_port + search_limit}."
     )
 
-def start_server():
-    """Start the uvicorn server"""
-    print("\n🚀 Starting server...")
-    print("=" * 50)
-    
+
+def start_server() -> None:
+    """Launch the Uvicorn ASGI server."""
     host = os.getenv("HOST", "0.0.0.0")
     port = resolve_server_port(host, int(os.getenv("PORT", "8000")))
     browser_host = "127.0.0.1" if host == "0.0.0.0" else host
-    
-    print(f"📡 Server will run on: http://{host}:{port}")
-    print(f"🔗 Frontend URL: http://{browser_host}:{port}/static/login.html")
-    print("=" * 50 + "\n")
-    
-    # Start server
+
+    print(f"Starting server on http://{host}:{port}")
+    print(f"Local access: http://{browser_host}:{port}")
+
     subprocess.run([
         sys.executable, "-m", "uvicorn",
         "main:app",
         "--host", host,
         "--port", str(port),
-        "--reload", "false"
     ])
 
-def main():
-    """Main function"""
-    print("=" * 50)
-    print("🎓 Face Attendance - Production Startup")
-    print("=" * 50 + "\n")
-    
-    # Check environment
+
+def main() -> None:
+    print("Face Attendance — Local Startup Check\n" + "-" * 40)
+
     if not check_env():
         sys.exit(1)
-    
-    # Test database
+
     if not test_database_connection():
-        response = input("\n⚠️  Database not connected. Start anyway? (y/N): ")
-        if response.lower() != 'y':
+        response = input("\nDatabase connection failed. Start anyway? (y/N): ")
+        if response.strip().lower() != "y":
             sys.exit(1)
-    
-    # Create tables
-    if not create_tables():
-        print("⚠️  Continuing despite table creation issues...")
-    
-    # Start server
+
     start_server()
+
 
 if __name__ == "__main__":
     main()

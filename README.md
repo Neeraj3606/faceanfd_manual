@@ -1,235 +1,262 @@
 # Face Attendance System
 
-A modern, secure, and commercially-free face recognition-based attendance system with anti-spoofing protection and AI-powered insights. Built using **FastAPI**, **YuNet + SFace (OpenCV Zoo ONNX)**, **MiniFASNet v2 (Liveness Detection)**, and **Grok (xAI API)**.
+A server-side face recognition attendance platform with liveness detection and AI-powered reporting. Built with **FastAPI**, **PostgreSQL**, **YuNet + SFace (OpenCV Zoo)**, **MiniFASNet v2**, and **Grok (xAI)**.
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-1. **Commercially-Free Face Recognition**
-   - Uses **YuNet** for fast & accurate face detection (~390 KB) and **SFace** for face recognition (~37 KB) from the OpenCV Zoo.
-   - 100% commercially usable (MIT License).
-   - Fast, CPU-friendly inference running completely locally without heavy framework dependencies (like PyTorch or TensorFlow).
+**Commercially-Free Face Recognition**
+Uses YuNet for face detection and SFace for face embedding — both MIT-licensed ONNX models from OpenCV Zoo. Inference runs entirely on CPU without PyTorch or TensorFlow.
 
-2. **Multi-Layer Anti-Spoofing & Liveness Detection**
-   - **MiniFASNet v2 (ONNX)**: Local CPU-based liveness verification. Real faces are distinguished from printed photos and digital screens.
-   - **Multi-Scale Inference**: Runs liveness scoring across multiple crop scales (e.g., 2.0x, 2.5x, 3.0x) to aggregate robust liveness decisions, minimizing false positives on mobile/tablet cameras.
-   - **Texture Heuristics**: Secondary checks checking Laplacian variance (sharpness), contrast, color variance, and edge density to catch obvious flat media.
-   - **Fail-Closed Configuration**: If the liveness model is missing or fails, the system automatically rejects verification for maximum security.
+**Anti-Spoofing and Liveness Detection**
+MiniFASNet v2 (ONNX) performs local liveness verification against printed photos and screen replays. Multi-scale crop inference aggregates scores across multiple bounding box scales to reduce false rejections on mobile cameras. A secondary texture heuristic layer checks sharpness, edge density, and color saturation. When the liveness model is unavailable, the system rejects verification by default (fail-closed).
 
-3. **Multi-Role Access Control (RBAC)**
-   - **Super Admin**: High-level dashboard to create schools, manage school administrators, view global system stats, and configure global system-wide settings.
-   - **School Admin**: Manage teacher accounts, enroll students with photos, configure school settings, and view school-wide attendance/excel reports.
-   - **Teacher**: Take live face attendance via webcam/mobile camera, record manual/bulk attendance for students, track class analytics, and export reports.
+**Role-Based Access Control**
+Three access tiers with isolated data scopes:
+- Super Admin — manages schools, creates administrators, views global statistics.
+- School Admin — manages teacher accounts, enrolls students, configures school settings, exports reports.
+- Teacher — captures live face attendance, records manual or bulk entries, tracks class-level analytics.
 
-4. **AI-Powered Insights (Powered by Grok)**
-   - Fully integrated with the **Grok (xAI API)** to provide intelligent, natural-language analysis of attendance trends.
-   - **Automatic Narrative Bullet Points**: Custom prompts tailored for Teachers (class-specific summaries, identifying students with <75% attendance) and Admins (school-wide performance, identifying worst/best performing classes).
-   - **Natural Language Q&A**: Interactive chat grounded in the attendance database. Users can ask questions like "Who was absent on Monday?" or "Which class has the lowest attendance this month?" and get precise answers.
+**AI Insights via Grok**
+Integrates with the Grok (xAI) API to generate role-specific narrative summaries and support natural-language queries against attendance data. Teachers receive class-level analysis; administrators receive school-wide performance breakdowns.
 
-5. **Production-Ready & Highly Mobile-Responsive**
-   - Fully optimized Frontend using modern Vanilla HTML/CSS/JS (glassmorphic aesthetic, viewport-fit=cover support for notch screens, large touch targets, PWA-ready for mobile install).
-   - Local data isolation (different school codes/IDs are cryptographically hashed so student codes can overlap between schools securely).
+**Mobile-Responsive Frontend**
+Vanilla HTML/CSS/JS frontend with PWA support, viewport-fit coverage for notched displays, and large touch targets. No external UI framework dependencies.
 
-6. **Excel Reports**
-   - Fast and complete export of attendance sheets for a single day, custom date ranges, or monthly/periodical summaries with styled headers and automatic formatting.
+**Excel Reporting**
+Exports daily rosters, custom date-range sheets, and monthly summary reports with auto-formatted column widths and styled headers.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-- **Backend**: FastAPI (Python 3.11)
-- **Database**: PostgreSQL (SQLAlchemy ORM with automatic tables & columns migration on startup)
-- **Face Detection**: YuNet ONNX (MIT License)
-- **Face Recognition**: SFace ONNX (MIT License)
-- **Liveness Detection**: MiniFASNet v2 ONNX
-- **AI Analytics**: Grok (xAI API) via `requests`
-- **Frontend**: Glassmorphism CSS, Vanilla ES6 JavaScript (No bulky frameworks)
+| Component | Technology |
+| :--- | :--- |
+| Backend | FastAPI (Python 3.11) |
+| Database | PostgreSQL via SQLAlchemy ORM |
+| Face Detection | YuNet ONNX (MIT) |
+| Face Recognition | SFace ONNX (MIT) |
+| Liveness Detection | MiniFASNet v2 ONNX (Apache 2.0) |
+| AI Analytics | Grok (xAI API) |
+| Frontend | Vanilla HTML / CSS / ES6 JavaScript |
 
 ---
 
-## 🚀 Quick Start
+## Getting Started
 
-### 1. Prerequisites
-- Python 3.11 (Python 3.12/3.13 are compatible, but 3.11 is recommended for local environments)
-- Camera/Webcam (for live attendance marking)
-- ~4GB RAM minimum
+### Prerequisites
+- Python 3.11 or later
+- A webcam or device camera for live attendance
+- 4 GB RAM minimum
+- PostgreSQL database (local or managed, e.g. Render)
 
-### 2. Installation
-Clone the repository and install the dependencies:
+### Installation
+
 ```bash
-# Enter the project directory
-cd face_attendance_updated
+git clone https://github.com/your-org/face-attendance.git
+cd face-attendance
 
-# Create a virtual environment
 python3.11 -m venv .venv311
-source .venv311/bin/activate  # On Windows: .venv311\Scripts\activate
+source .venv311/bin/activate        # Windows: .venv311\Scripts\activate
 
-# Install required dependencies
 pip install -r requirements.txt
 ```
 
-### 3. Download AI Models
-To automatically fetch the YuNet, SFace, and MiniFASNet ONNX models to the `data/models/` directory:
+### Downloading Models
+
+YuNet and SFace are fetched from OpenCV Zoo. MiniFASNet is already included in the repository.
+
 ```bash
 python download_model.py
 ```
 
-### 4. Configuration
-Create a `.env` file in the root directory (you can copy/rename `.env` if it already exists) and populate it:
+### Configuration
+
+Create a `.env` file in the project root. A sample structure is shown below — **do not commit real credentials**.
+
 ```env
-SECRET_KEY=your_generated_jwt_secret_key
-SUPER_ADMIN_SECRET=your_generated_super_admin_secret_key
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+# Security
+SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
+SUPER_ADMIN_SECRET=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
 
-# Face Recognition Settings
-MATCH_THRESHOLD=0.65            # Cosine similarity matching threshold (0.55-0.70)
+# Database
+DATABASE_URL=postgresql://user:password@host:5432/dbname
 
-# Anti-Spoofing Settings
-LIVENESS_ENABLED=true           # Enable liveness detection
-MINIFASNET_REAL_THRESHOLD=0.20  # Real face score threshold
+# Face Recognition
+MATCH_THRESHOLD=0.65
+
+# Liveness Detection
+LIVENESS_ENABLED=true
+LIVENESS_FAIL_CLOSED=true
+MINIFASNET_REAL_THRESHOLD=0.20
 MINIFASNET_CROP_SCALE=2.2
 MINIFASNET_SCALES=2.0,2.5,3.0
-MINIFASNET_MULTI_SCALE=true     # Use multi-scale liveness scoring
-LIVENESS_FAIL_CLOSED=true       # Fail closed for maximum security
+MINIFASNET_MULTI_SCALE=true
 
-# Grok AI Insights Configuration
-GROK_API_KEY=your_xai_grok_api_key_here
-GROK_MODEL=grok-3               # e.g., grok-2 or grok-3
+# Grok AI (optional)
+GROK_API_KEY=<your xAI API key>
+GROK_MODEL=grok-3
 
-# CORS Config
-ALLOWED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+# CORS (comma-separated allowed origins)
+ALLOWED_ORIGINS=http://localhost:8000,https://yourdomain.com
 ```
-> **Tip:** You can generate a strong secure key using:
-> `python -c "import secrets; print(secrets.token_hex(32))"`
 
-### 5. Running the Server
-You can launch the FastAPI server using the production wrapper script, which runs environment & database diagnostics on launch:
+### Running the Server
+
 ```bash
-python start_server.py
-```
-Or, start it directly using Uvicorn (or Conda if running in `saas311` environment):
-```bash
-# Direct run
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
-Open **http://localhost:8000** in your browser (it will automatically redirect you to the login screen).
+
+Open `http://localhost:8000` — the root path redirects to the login page.
 
 ---
 
-## 🔑 Default Roles & Access
+## Default Credentials
 
-| Role | Default Username | Default Password | URL Route / Page |
-| :--- | :--- | :--- | :--- |
-| **Super Admin** | `superadmin` / `superadmin@faceattend.local` | Found in Database setup (configured via `setup-admin` endpoint) | `/static/super_admin.html` |
-| **School Admin** | Created by Super Admin | Created by Super Admin | `/static/admin_dashboard.html` |
-| **Teacher** | Created by School Admin | Created by School Admin | `/static/teacher.html` |
+| Role | Username | Password |
+| :--- | :--- | :--- |
+| Super Admin | `superadmin@gmail.com` | Set via `_ensure_super_admin` on first run |
+| School Admin | Created by Super Admin | Created by Super Admin |
+| Teacher | Created by School Admin | Created by School Admin |
+
+> Change the default Super Admin password immediately after first login.
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
-```text
-face_attendance_updated/
+```
+face_attendance/
 ├── app/
-│   ├── main.py              # FastAPI main application & server launch wrapper
-│   ├── routes.py            # Main API routing (attendance, analytics, student profile)
-│   ├── auth_routes.py       # Authentication, user management, and super admin control
-│   ├── auth.py              # JWT authentication & session verification utilities
-│   ├── db.py                # Database connection & session setup
-│   ├── models.py            # SQLAlchemy PostgreSQL schema models (User, Student, Attendance, FaceEncoding)
-│   ├── encoder.py           # YuNet + SFace face detection & recognition pipeline
-│   ├── liveness.py          # MiniFASNet v2 multi-scale ONNX liveness engine
-│   ├── antispoofing_onnx.py # Secondary texture quality/heuristic checks
-│   ├── ai_insights.py       # Grok Q&A and narrative text analysis context builder
-│   ├── attendance_excel.py  # Advanced multi-period/daily Excel spreadsheet builder
-│   ├── storage.py           # Local file structure management
-│   └── storage_helper.py    # General helper utilities
+│   ├── routes.py              # Attendance, analytics, student API endpoints
+│   ├── auth_routes.py         # Authentication and user management endpoints
+│   ├── auth.py                # JWT utilities and password hashing
+│   ├── db.py                  # Database engine and session configuration
+│   ├── models.py              # SQLAlchemy ORM models
+│   ├── encoder.py             # YuNet + SFace inference pipeline
+│   ├── liveness.py            # MiniFASNet v2 ONNX liveness engine
+│   ├── ai_insights.py         # Grok context builder and Q&A handler
+│   ├── attendance_excel.py    # Excel report generation
+│   ├── config.py              # Environment variable parsing
+│   ├── storage.py             # Directory management
+│   └── storage_helper.py      # File and path utilities
 ├── Frontend/
-│   ├── login.html           # Modern responsive login page with safe areas
-│   ├── super_admin.html     # Super admin management cockpit
-│   ├── admin_dashboard.html # School administrator management dashboard
-│   ├── teacher.html         # Classroom attendance capture and student panel
-│   └── ...                  # Frontend visual styles and assets
+│   ├── login.html             # Login page
+│   ├── super_admin.html       # Super admin dashboard
+│   ├── admin_dashboard.html   # School admin dashboard
+│   └── teacher.html           # Teacher attendance capture
 ├── data/
-│   └── models/              # Downloaded ONNX model binaries (YuNet, SFace, MiniFASNet)
+│   └── models/                # ONNX model binaries
 ├── uploads/
-│   └── students/            # Structured enrollments directory for student face images
-├── requirements.txt         # Pip dependency requirements
-├── start_server.py          # Interactive production server runner
-└── .env                     # Server local environment variables
+│   └── students/              # Enrolled student face images
+├── main.py                    # Application entry point and lifespan hooks
+├── download_model.py          # Model download and PTH-to-ONNX conversion
+├── requirements.txt
+└── Dockerfile
 ```
 
 ---
 
-## 📡 API Reference & Endpoints
+## API Reference
 
-Interactive Swagger documentation is available locally at:
-- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+Full interactive documentation is available at `/docs` (Swagger UI) and `/redoc` when the server is running.
 
 ### Authentication
-- `POST /auth/login` - User login session creation
-- `POST /auth/logout` - User logout session termination
-- `GET /auth/me` - Fetch authenticated user details
-- `POST /auth/change-password` - Change account password
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | `/auth/login` | Create a session token |
+| POST | `/auth/logout` | Invalidate the session |
+| GET | `/auth/me` | Return the authenticated user profile |
+| POST | `/auth/change-password` | Update account password |
 
-### Student & Face Registration
-- `POST /enroll` - Enroll a student with structural face image data
-- `DELETE /student/delete/{student_id}` - Clear student profile and face templates
-- `GET /students` - List school-scoped/class-scoped students
+### Student Management
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | `/enroll` | Enroll a student with face images |
+| DELETE | `/student/delete/{student_id}` | Remove a student and their face data |
+| GET | `/students` | List students scoped to the caller's role |
 
-### Attendance Operations
-- `POST /attendance/mark` - Mark live face attendance (includes liveness detection check)
-- `POST /attendance/manual` - Log/Update student attendance manually
-- `POST /attendance/bulk` - Log/Update student attendance in bulk
+### Attendance
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | `/attendance/mark` | Record live face attendance (includes liveness check) |
+| POST | `/attendance/manual` | Record or update a single attendance entry |
+| POST | `/attendance/bulk` | Record or update attendance for multiple students |
+| GET | `/attendance/today` | Return today's attendance records |
+| GET | `/attendance/export/today` | Download today's roster as an Excel file |
+| GET | `/attendance/export/excel` | Download a date-range attendance sheet |
+| GET | `/attendance/export/summary` | Download a monthly summary report |
 
-### Reporting & Analytics
-- `GET /attendance/today` - Today's class dashboard statistics
-- `GET /attendance/export/today` - Export today's attendance roster to Excel
-- `GET /attendance/export/excel` - Export custom range attendance sheet to Excel
-- `GET /attendance/export/summary` - Export monthly summary report to Excel
-- `GET /analytics/summary` - Overall metrics overview
-- `GET /analytics/defaulters` - List students dropping below 75% attendance
+### Analytics
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | `/analytics/summary` | Overall attendance metrics |
+| GET | `/analytics/class-wise` | Per-class attendance percentages |
+| GET | `/analytics/monthly` | Daily trend for the current month |
+| GET | `/analytics/defaulters` | Students below a configurable attendance threshold |
 
-### AI Insights (Grok)
-- `GET /ai/insights` - Request auto-generated, role-specific text insights
-- `POST /ai/chat` - Grounded attendance question and answer session
-- `GET /ai/status` - Probe if Grok AI integration is ready & active
-
----
-
-## 🔧 Troubleshooting
-
-### 1. Camera Permissions
-- Ensure that the browser has webcam access.
-- Live camera attendance requires an SSL certificate (HTTPS) or running from `localhost`/`127.0.0.1`. Modern browsers restrict camera access on standard HTTP links.
-
-### 2. Liveness Fails or False Rejections
-- Ensure proper lighting on the face. Backlight or heavy shadows can trigger anti-spoofing flags.
-- If anti-spoofing is too restrictive for your webcam quality, adjust `MINIFASNET_REAL_THRESHOLD` in `.env` (e.g., lower to `0.15` or `0.18`).
-- If liveness models are missing, run: `python download_model.py`.
-
-### 3. Face Recognition Mismatches
-- If the system registers another student's face instead of the correct one, increase `MATCH_THRESHOLD` in `.env` (e.g., `0.70` or `0.75`).
-- Ensure students enroll with at least 8 high-quality photos covering various angles/light profiles.
+### AI Insights
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | `/ai/insights` | Generate role-specific narrative summary |
+| POST | `/ai/chat` | Answer a natural-language question about attendance data |
+| GET | `/ai/status` | Check if Grok integration is configured and active |
 
 ---
 
-## 🔒 Security Practices
-- **Password Hashing**: Bcrypt verification with dynamic salting.
-- **JWT Authentication**: Cryptographically signed access tokens for stateless session tracking.
-- **Data Isolation**: School-scoped database queries to keep student rosters isolated.
-- **ORM Integrity**: Full SQLAlchemy representation preventing SQL Injection.
+## Deployment on Render
+
+1. Create a **Web Service** pointing to your GitHub repository.
+2. Set **Environment** to `Docker`.
+3. Configure the following environment variables in the Render dashboard:
+
+| Variable | Description |
+| :--- | :--- |
+| `DATABASE_URL` | Render PostgreSQL internal connection string |
+| `SECRET_KEY` | Random 32-byte hex string |
+| `SUPER_ADMIN_SECRET` | Random 32-byte hex string |
+| `LIVENESS_ENABLED` | `true` |
+| `LIVENESS_FAIL_CLOSED` | `true` |
+| `ALLOWED_ORIGINS` | Your Render service URL |
+| `GROK_API_KEY` | Optional — enables AI insights |
+
+4. The application creates all database tables and runs safe column migrations on startup.
+5. The Super Admin account is created automatically on the first startup if no Super Admin exists.
 
 ---
 
-## 📄 License
-This project is licensed under the **MIT License** — free for personal, educational, and commercial purposes.
+## Troubleshooting
+
+**Camera access denied in browser**
+Live attendance requires camera access over HTTPS or from `localhost`. Standard HTTP connections are blocked by browsers for camera APIs.
+
+**Liveness false rejections**
+Poor or backlit lighting commonly triggers anti-spoofing flags. Lower `MINIFASNET_REAL_THRESHOLD` to `0.15` or `0.18` in `.env` if legitimate faces are being rejected in your environment.
+
+**Face recognition mismatches**
+Increase `MATCH_THRESHOLD` to `0.70` or higher if the system is producing incorrect matches. Enroll each student with a minimum of eight photos covering different angles and lighting conditions.
 
 ---
 
-## 🌟 Acknowledgements
-- **OpenCV Zoo** for providing YuNet and SFace models.
-- **MiniFASNet** authors for the anti-spoofing network architecture.
-- **x.ai** for the Grok language model.
+## Security Notes
+
+- Passwords are hashed with bcrypt.
+- Sessions use short-lived, cryptographically signed JWTs.
+- All database queries are parameterized through SQLAlchemy to prevent SQL injection.
+- Student data is scoped per school using a SHA-1-derived identifier to prevent cross-school data leakage.
+- Never commit `.env` or credentials to version control.
+
+---
+
+## License
+
+MIT License. Free for personal, educational, and commercial use.
+
+---
+
+## Acknowledgements
+
+- OpenCV Zoo for YuNet and SFace ONNX models.
+- MiniFASNet authors for the Silent-Face-Anti-Spoofing architecture.
+- xAI for the Grok language model API.

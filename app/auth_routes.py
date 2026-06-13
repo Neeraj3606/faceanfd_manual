@@ -311,26 +311,23 @@ def change_password(
 # =========================
 @router.post("/setup-admin")
 def setup_admin(
-    username: str = Form("superadmin@gmail.com"),
-    password: str = Form("superadmin123"),
+    username: str = Form(...),
+    password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    """Create default super admin user (one-time setup, only works if no users exist)"""
-    # Check if any users exist
+    """Create the initial Super Admin account. Only succeeds if no users exist in the database."""
     if db.query(User).first():
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Setup already completed. Use admin panel to create users."
+            detail="Setup already completed. Use the admin panel to manage users."
         )
-    
-    # Validate credentials
+
     if len(password) < 8:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must be at least 8 characters"
+            detail="Password must be at least 8 characters."
         )
 
-    # Create super admin user
     admin_user = User(
         username=username,
         email=username,
@@ -342,14 +339,14 @@ def setup_admin(
         is_admin=True,
         is_super_admin=True
     )
-    
+
     db.add(admin_user)
     db.commit()
     db.refresh(admin_user)
-    
+
     return {
         "ok": True,
-        "message": "Super Admin created. Login with superadmin@gmail.com and your password.",
+        "message": "Super Admin account created successfully.",
         "username": username,
     }
 
