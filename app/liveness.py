@@ -241,7 +241,7 @@ def _run_single_crop(session, crop_bgr: np.ndarray) -> Optional[float]:
 
 def _check_texture_quality(crop_bgr: np.ndarray) -> Tuple[bool, float]:
     """
-    Simple texture analysis to detect obvious printed photos or screen displays.
+    Texture analysis to detect obvious printed photos or screen displays.
     Returns (is_suspicious, quality_score)
     """
     if crop_bgr is None or crop_bgr.size == 0:
@@ -272,6 +272,9 @@ def _check_texture_quality(crop_bgr: np.ndarray) -> Tuple[bool, float]:
         if edge_density < 0.02:
             suspicious = True
         if sat_mean < 28.0 and highlight_ratio > 0.08:
+            suspicious = True
+        # Phone screen replay: high highlight ratio (screen glow) + moderate/artificial saturation
+        if highlight_ratio > 0.12 and sat_mean > 80.0:
             suspicious = True
 
         return suspicious, quality
@@ -329,17 +332,16 @@ def check_liveness(frame_bgr: np.ndarray, bbox: Sequence[float]) -> LivenessResu
         return _fail_or_bypass("MiniFASNet inference failed on all scales.", "inference_failed")
 
     # Balanced multi-scale aggregation.
-    # Use weighted combination of max and median to be robust across scales.
-    # max_score captures if ANY scale clearly sees a live face.
-    # median_score prevents a single lucky outlier from passing.
+    # Give equal weight to max and median — median ensures consistency across scales,
+    # max ensures ANY scale clearly seeing a real face is weighted.
     scores_arr = np.asarray(scores, dtype=np.float32)
     median_score = float(np.median(scores_arr))
-    min_score = float(np.min(scores_arr))
     max_score = float(np.max(scores_arr))
+    min_score = float(np.min(scores_arr))
     score_spread = max_score - min_score
 
     # Weighted combined score: favours the best scale but anchors on median
-    combined_score = float(max_score * 0.4 + median_score * 0.6)
+    combined_score = float(max_score * 0.5 + median_score * 0.5)
 
     is_suspicious = False
     texture_quality = 1.0
@@ -347,16 +349,16 @@ def check_liveness(frame_bgr: np.ndarray, bbox: Sequence[float]) -> LivenessResu
         is_suspicious, texture_quality = _check_texture_quality(best_crop)
 
     # Primary gate: combined_score must exceed threshold.
-    # secondary gate: min_score must not be extremely low (catches 1-scale flukes).
+    # secondary gate: min_score must not be extremely low (0.70 threshold — all scales must mostly agree).
     is_real = (
         combined_score >= LIVENESS_REAL_THRESHOLD
-        and min_score >= (LIVENESS_REAL_THRESHOLD * 0.65)
+        and min_score >= (LIVENESS_REAL_THRESHOLD * 0.70)
     )
 
-    # Texture/screen heuristic: only hard-reject if texture is VERY low
-    # (printed A4 photo or clearly flat screen). Threshold lowered to 0.35
-    # so real webcam/mobile faces with moderate saturation are not rejected.
-    if is_suspicious and texture_quality < 0.35:
+    # Texture/screen heuristic: reject if texture quality is clearly low
+    # (printed A4 photo or phone screen replay). Threshold 0.28 balances
+    # catching screens while not rejecting real faces with moderate lighting.
+    if is_suspicious and texture_quality < 0.28:
         is_real = False
 
     logger.info(

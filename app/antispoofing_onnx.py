@@ -104,13 +104,13 @@ def analyze_contrast(img_bgr: np.ndarray) -> Tuple[bool, float, str]:
 
 def check_antispoofing_lightweight(img_bgr: np.ndarray) -> Tuple[bool, str]:
     """
-    Secondary heuristic anti-spoofing — safety net only.
+    Secondary heuristic anti-spoofing — safety net for obvious attacks.
 
-    MiniFASNet ONNX (primary liveness) already handles the main detection.
-    This only rejects images that are OBVIOUSLY non-live:
-    - Extremely blurry flat prints
+    MiniFASNet ONNX (primary liveness) handles the main detection.
+    This catches extreme cases that slip through or when the ONNX model is lenient:
+    - Extremely blurry flat prints (ALL four checks must fail)
     - Near-zero contrast / near-solid colour blocks
-    ALL four checks must fail to reject, OR an extreme combined condition.
+    - Combined extreme condition triggers
     """
     try:
         if img_bgr is None or img_bgr.size == 0:
@@ -147,13 +147,12 @@ def check_antispoofing_lightweight(img_bgr: np.ndarray) -> Tuple[bool, str]:
         extreme_flat_block = details["color_variance"] < 35.0 and details["edge_density"] < 0.006
         all_four_fail = len(failed_checks) >= 4
 
-        # We log the heuristic failure but DO NOT reject the face here.
-        # The ONNX MiniFASNet model is much more accurate and should be the sole decider.
         if extreme_blurry_print or extreme_flat_block or all_four_fail:
-            logger.warning("Secondary anti-spoofing heuristic flagged image (IGNORED) | Reasons: %s | Details: %s", failed_checks, details)
-            # return False, "Spoofing detected"
+            reason = failed_checks[0] if failed_checks else "Extreme spoof indicators detected"
+            logger.warning("Secondary anti-spoofing REJECTED | Reasons: %s | Details: %s", failed_checks, details)
+            return False, reason
 
-        logger.info("Secondary anti-spoofing passed or bypassed | failed=%d/4 | Details: %s", len(failed_checks), details)
+        logger.info("Secondary anti-spoofing passed | failed=%d/4 | Details: %s", len(failed_checks), details)
         return True, "✅ Real face verified"
 
     except Exception as e:

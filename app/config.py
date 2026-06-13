@@ -112,10 +112,10 @@ LIVENESS_FAIL_CLOSED = os.getenv("LIVENESS_FAIL_CLOSED", "true").strip().lower()
     "no",
     "off",
 }
-# Threshold lowered from 0.75 → 0.60 to avoid false rejections of real live faces.
-# MiniFASNet scores vary by lighting/camera — 0.60 catches photos/screens while
-# keeping genuine webcam/mobile captures accepted.
-LIVENESS_REAL_THRESHOLD = float(os.getenv("MINIFASNET_REAL_THRESHOLD", "0.60"))
+# Threshold raised from 0.60 → 0.65 to reduce false acceptances from phone screen replays.
+# MiniFASNet scores vary by lighting/camera — 0.65 better catches screens while
+# keeping genuine live webcam/mobile captures accepted with high confidence.
+LIVENESS_REAL_THRESHOLD = float(os.getenv("MINIFASNET_REAL_THRESHOLD", "0.65"))
 # MiniFASNet V2 outputs 3 classes: [spoof_print, REAL, spoof_replay]
 # Real class is at index 1 when using 0-255 RGB input.
 # CRITICAL: this model needs raw 0-255 pixel values in RGB order.
