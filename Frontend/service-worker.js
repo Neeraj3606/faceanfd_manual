@@ -1,10 +1,10 @@
 /**
- * Face Attendance PWA Service Worker
+ * Attendance PWA Service Worker
  * Strategy: Cache-first for static assets, Network-first for API calls
  */
-const CACHE_VERSION = 'v3';
-const STATIC_CACHE  = `faceatt-static-${CACHE_VERSION}`;
-const DYNAMIC_CACHE = `faceatt-dynamic-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v4';
+const STATIC_CACHE  = `attendance-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `attendance-dynamic-${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
   '/static/login.html',
@@ -22,7 +22,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Offline — Face Attendance</title>
+  <title>Offline — Attendance</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:system-ui,sans-serif;background:#07101e;color:#e4edff;
@@ -40,7 +40,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 <body>
   <div class="icon">📡</div>
   <h1>You're Offline</h1>
-  <p>Face Attendance needs an internet connection to work. Please check your connection and try again.</p>
+  <p>Attendance needs an internet connection to work. Please check your connection and try again.</p>
   <button onclick="location.reload()">Try Again</button>
 </body>
 </html>`;
@@ -123,7 +123,7 @@ self.addEventListener('fetch', event => {
 self.addEventListener('push', event => {
   if (!event.data) return;
   const data = event.data.json();
-  self.registration.showNotification(data.title || 'Face Attendance', {
+  self.registration.showNotification(data.title || 'Attendance', {
     body: data.body || '',
     icon: '/static/icons/icon-192x192.png',
     badge: '/static/icons/icon-72x72.png',

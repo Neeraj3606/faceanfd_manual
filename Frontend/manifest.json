@@ -1,14 +1,14 @@
 {
-  "name": "FaceAttend — Smart Attendance",
-  "short_name": "FaceAttend",
-  "description": "AI-powered face recognition attendance system with real-time analytics, liveness detection, and Power BI-style dashboards.",
+  "name": "Attendance",
+  "short_name": "Attendance",
+  "description": "AI-powered face recognition attendance system with real-time analytics, liveness detection, and smart dashboards.",
   "id": "/static/",
   "start_url": "/static/login.html",
   "scope": "/static/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "background_color": "#07101e",
-  "theme_color": "#1547c0",
+  "background_color": "#1a1a6e",
+  "theme_color": "#6c3fc5",
   "orientation": "portrait-primary",
   "lang": "en",
   "dir": "ltr",
@@ -88,14 +88,14 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "FaceAttend Admin Dashboard"
+      "label": "Attendance Admin Dashboard"
     },
     {
       "src": "/static/icons/screenshot-narrow.png",
       "sizes": "750x1334",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "FaceAttend Mobile View"
+      "label": "Attendance Mobile View"
     }
   ],
   "edge_side_panel": {

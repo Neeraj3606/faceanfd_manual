@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b1121" />
+  <meta name="theme-color" content="#1a1a6e" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="/static/manifest.json" />
   <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png" />
-  <title>Login — Face Attendance</title>
+  <title>Login — Attendance</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,7 +32,8 @@
       width: 100%; max-width: 420px;
       box-shadow: 0 24px 64px rgba(0,0,0,.5);
     }
-    .logo { font-size: 52px; text-align: center; margin-bottom: 8px; }
+    .logo { text-align: center; margin-bottom: 12px; }
+    .logo img { width: 80px; height: 80px; border-radius: 20px; box-shadow: 0 8px 32px rgba(108,63,197,.45); }
     h1 {
       text-align: center; font-size: 26px; font-weight: 800;
       background: linear-gradient(135deg, #6ea8ff, #7c5cff);
@@ -110,8 +111,8 @@
 </head>
 <body>
 <div class="card">
-  <div class="logo">&#127891;</div>
-  <h1>Face Attendance</h1>
+  <div class="logo"><img src="/static/icons/icon-192x192.png" alt="Attendance App Icon" /></div>
+  <h1>Attendance</h1>
   <p class="subtitle">Sign in to access your dashboard</p>
 
   <div class="alert error"   id="errMsg"></div>

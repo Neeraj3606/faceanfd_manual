@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#1a56db" media="(prefers-color-scheme: light)"/>
 <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)"/>
-<meta name="description" content="Face Attendance Pro - Teacher Portal"/>
+<meta name="description" content="Attendance - Teacher Portal"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="FaceAtt"/>
+<meta name="apple-mobile-web-app-title" content="Attendance"/>
 <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png"/>
-<title>Face Attendance Pro — Teacher Portal</title>
+<title>Attendance — Teacher Portal</title>
 <link rel="manifest" href="/static/manifest.json"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
@@ -219,6 +219,42 @@ label.form-label{font-size:10px;font-weight:700;color:var(--text3);text-transfor
 .cam-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,0.4);}
 .cam-placeholder i{font-size:36px;margin-bottom:8px;}
 
+/* CAMERA CONTROLS - equal button grid */
+.cam-controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;}
+.cam-controls .btn{width:100%;justify-content:center;padding:10px 6px;min-height:44px;font-size:12px;}
+@media(max-width:480px){
+  .cam-controls{grid-template-columns:repeat(4,1fr);gap:6px;}
+  .cam-controls .btn{font-size:11px;padding:8px 4px;min-height:42px;}
+}
+
+/* Enroll webcam controls - equal button grid */
+.wc-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;justify-content:center;}
+.wc-controls .btn{width:100%;justify-content:center;min-height:44px;}
+.wc-controls2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.wc-controls2 .btn{width:100%;justify-content:center;min-height:44px;}
+
+/* Mobile bottom nav for teacher */
+.teacher-bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  padding:0 4px;
+  padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -4px 24px rgba(26,86,219,0.12);
+}
+.tbn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 4px 6px;border:none;background:none;cursor:pointer;
+  color:var(--text3);font-size:9px;font-weight:600;font-family:'DM Sans',sans-serif;
+  transition:color .2s;gap:3px;min-height:54px;
+  -webkit-tap-highlight-color:transparent;
+}
+.tbn-item.active{color:var(--blue-600);}
+.tbn-item.active .tbn-icon{transform:scale(1.15);}
+.tbn-icon{font-size:18px;line-height:1;transition:transform .2s;}
+.tbn-lbl{font-size:9px;letter-spacing:.02em;}
+
 /* ATTENDANCE MANUAL */
 .student-list{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow-y:auto;}
 .student-row{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;transition:var(--transition);}
@@ -315,6 +351,9 @@ label.form-label{font-size:10px;font-weight:700;color:var(--text3);text-transfor
   .reports-grid{grid-template-columns:1fr;}
   .form-row,.form-row.thirds{grid-template-columns:1fr;}
   #faceSection > div, #enrollSection > div{grid-template-columns:1fr !important;}
+  .teacher-bottom-nav{display:flex;}
+  .main{padding-bottom:calc(54px + env(safe-area-inset-bottom));}
+  .content{padding-bottom:calc(80px + env(safe-area-inset-bottom));}
 }
 @media(max-width:600px){
   body{font-size:13px;}
@@ -328,7 +367,7 @@ label.form-label{font-size:10px;font-weight:700;color:var(--text3);text-transfor
   .sidebar-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom));}
   #toast-wrap{bottom:calc(16px + env(safe-area-inset-bottom));right:12px;left:12px;}
   .toast{max-width:100%;}
-  .btn{min-height:42px;padding:10px 14px;}
+  .btn{min-height:44px;padding:10px 14px;}
   .topbar{padding-top:calc(10px + env(safe-area-inset-top));}
 }
 @media(max-width:480px){
@@ -446,9 +485,9 @@ canvas{display:none;}
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-top">
     <div class="brand">
-      <div class="brand-icon"><i class="fas fa-graduation-cap"></i></div>
+      <div class="brand-icon" style="padding:0;overflow:hidden;border-radius:10px;"><img src="/static/icons/icon-72x72.png" alt="Attendance" style="width:100%;height:100%;object-fit:cover;display:block;"/></div>
       <div>
-        <div class="brand-name">Face Attendance</div>
+        <div class="brand-name">Attendance</div>
         <div class="brand-sub">Teacher Portal</div>
       </div>
     </div>
@@ -478,7 +517,7 @@ canvas{display:none;}
     <div class="nav-group">
       <div class="nav-label">Attendance</div>
       <button class="nav-btn" data-tab="face" onclick="goTab('face')">
-        <i class="nav-icon fas fa-camera"></i><span>Face Attendance</span>
+        <i class="nav-icon fas fa-camera"></i><span>Face Scan</span>
       </button>
       <button class="nav-btn" data-tab="manual" onclick="goTab('manual')">
         <i class="nav-icon fas fa-list-check"></i><span>Manual Attendance</span>
@@ -653,13 +692,13 @@ canvas{display:none;}
               <div style="border:1px dashed var(--blue-200);border-radius:var(--radius-lg);padding:18px;background:var(--blue-50);text-align:center;margin-bottom:14px;">
                 <i class="fas fa-camera" style="font-size:28px;color:var(--blue-500);margin-bottom:8px;display:block;"></i>
                 <p style="font-size:13px;color:var(--text2);margin-bottom:14px;font-weight:500;">Webcam Capture for Better Recognition</p>
-                <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                <div class="wc-controls">
                   <button type="button" class="btn primary" onclick="toggleWebcam()" id="wcToggle"><i class="fas fa-video"></i> Start Camera</button>
                   <button type="button" class="btn" onclick="switchFacing()"><i class="fas fa-arrows-rotate"></i> Flip</button>
                 </div>
                 <div id="wcWrap" style="display:none;margin-top:14px;">
                   <div class="cam-box" style="margin-bottom:10px;"><video id="wcVideo" autoplay playsinline muted></video></div>
-                  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;">
+                  <div class="wc-controls2">
                     <button type="button" class="btn success" onclick="capturePhoto()"><i class="fas fa-camera"></i> Capture</button>
                     <button type="button" class="btn danger" onclick="stopWebcam()"><i class="fas fa-stop"></i> Stop</button>
                   </div>
@@ -763,13 +802,13 @@ canvas{display:none;}
                 <span style="font-size:12px;">Camera not started</span>
               </div>
             </div>
-            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-              <button class="btn primary" style="flex:1;justify-content:center;" onclick="captureAttendance()" id="capAttBtn">
+            <div class="cam-controls">
+              <button class="btn primary" onclick="captureAttendance()" id="capAttBtn">
                 <i class="fas fa-camera"></i> <span id="capAttTxt">Capture & Check In</span>
               </button>
               <button class="btn" onclick="startFaceCam()"><i class="fas fa-play"></i> Start</button>
-              <button class="btn" onclick="switchFacing()"><i class="fas fa-arrows-rotate"></i></button>
-              <button class="btn" onclick="stopFaceCam()"><i class="fas fa-stop"></i> Stop</button>
+              <button class="btn" onclick="switchFacing()"><i class="fas fa-arrows-rotate"></i> Flip</button>
+              <button class="btn danger" onclick="stopFaceCam()"><i class="fas fa-stop"></i> Stop</button>
             </div>
             <div id="faceResult" style="display:none;margin-top:10px;"></div>
           </div>
@@ -969,6 +1008,30 @@ canvas{display:none;}
   </div><!-- /content -->
 </main>
 </div><!-- /app -->
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="teacher-bottom-nav" id="teacherBottomNav">
+  <button class="tbn-item active" id="tbn-dashboard" onclick="goTab('dashboard')">
+    <span class="tbn-icon"><i class="fas fa-th-large"></i></span>
+    <span class="tbn-lbl">Dashboard</span>
+  </button>
+  <button class="tbn-item" id="tbn-face" onclick="goTab('face')">
+    <span class="tbn-icon"><i class="fas fa-camera"></i></span>
+    <span class="tbn-lbl">Attendance</span>
+  </button>
+  <button class="tbn-item" id="tbn-manual" onclick="goTab('manual')">
+    <span class="tbn-icon"><i class="fas fa-list-check"></i></span>
+    <span class="tbn-lbl">Manual</span>
+  </button>
+  <button class="tbn-item" id="tbn-enroll" onclick="goTab('enroll')">
+    <span class="tbn-icon"><i class="fas fa-user-plus"></i></span>
+    <span class="tbn-lbl">Enroll</span>
+  </button>
+  <button class="tbn-item" id="tbn-reports" onclick="goTab('reports')">
+    <span class="tbn-icon"><i class="fas fa-file-export"></i></span>
+    <span class="tbn-lbl">Reports</span>
+  </button>
+</nav>
 
 <canvas id="snapCanvas"></canvas>
 <div id="toast-wrap"></div>
@@ -1624,6 +1687,10 @@ function goTab(tab){
   if(tab==='manage') loadManageStudents();
   if(tab==='reports') {}
   if(tab==='ai') { checkAIStatus().then(ok => { if(ok) loadAIInsights(); }); }
+  // Sync mobile bottom nav
+  document.querySelectorAll('.tbn-item').forEach(b=>b.classList.remove('active'));
+  const tbnEl = document.getElementById('tbn-'+tab);
+  if(tbnEl) tbnEl.classList.add('active');
 }
 
 /* ---- HELPERS ---- */
