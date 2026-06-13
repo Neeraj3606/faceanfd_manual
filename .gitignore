@@ -9,7 +9,7 @@ __pycache__/
 venv/
 env/
 
-# ML Models
+# ML Models — excluded to keep repo light
 data/models/
 *.onnx
 *.zip
@@ -17,6 +17,10 @@ data/models/
 *.pt
 *.h5
 *.pb
+
+# Exception: MiniFASNet anti-spoofing model committed for Render deployment
+# (1.7MB — avoids PyTorch dependency in Docker build)
+!data/models/minifasnet_v2.onnx
 
 # Database & User Data
 *.db
