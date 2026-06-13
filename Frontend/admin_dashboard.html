@@ -1100,10 +1100,10 @@ function showPage(page){
   render();
 }
 
-function render(){
+async function render(){
   const c = document.getElementById('content');
   const fns = {dashboard:renderDashboard,teachers:renderTeachers,students:renderStudents,faces:renderFaces,reports:renderReports,settings:renderSettings,ai:renderAI};
-  (fns[activePage]||renderDashboard)(c);
+  await (fns[activePage]||renderDashboard)(c);
 }
 
 /* ════════════════════════
@@ -1115,21 +1115,24 @@ function destroyChart(id){
 }
 
 async function renderDashboard(c){
+  // Show loading while fetching analytics
+  c.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);"><div style="font-size:32px;margin-bottom:12px;">⏳</div>Loading dashboard...</div>';
+
   const t = getTeachers();
   const pct = classData.length ? Math.round(classData.reduce((a,g)=>a+Number(g.attendance_rate||0),0)/classData.length) : 0;
   const totalP = totalPresent(), totalA = totalAbsent();
   const totalScoped = totalP + totalA;
 
-  // Fetch monthly trend data
+  // Fetch monthly trend and summary data
   let monthlyLabels = [], monthlyValues = [];
   let summaryData = { total_students: students.length, present_today: totalP, weekly_avg: 0, monthly_avg: 0 };
   try {
     const [mRes, sRes] = await Promise.all([
-      fetch(API+'/analytics/monthly',{headers:{Authorization:`Bearer ${TOKEN}`}}).then(r=>r.json()),
-      fetch(API+'/analytics/summary',{headers:{Authorization:`Bearer ${TOKEN}`}}).then(r=>r.json())
+      fetch(API+'/analytics/monthly',{headers:{Authorization:`Bearer ${TOKEN}`}}).then(r=>r.json()).catch(()=>({})),
+      fetch(API+'/analytics/summary',{headers:{Authorization:`Bearer ${TOKEN}`}}).then(r=>r.json()).catch(()=>({}))
     ]);
-    if(mRes.ok){ monthlyLabels = mRes.labels||[]; monthlyValues = mRes.values||[]; }
-    if(sRes.ok){ summaryData = {...summaryData, ...sRes}; }
+    if(mRes && mRes.ok){ monthlyLabels = mRes.labels||[]; monthlyValues = mRes.values||[]; }
+    if(sRes && sRes.ok){ summaryData = {...summaryData, ...sRes}; }
   } catch(_){}
 
   c.innerHTML = `<div class="page">
@@ -1680,24 +1683,13 @@ async function saveTeacher(){
     toast('Password must be at least 8 characters.','bad'); return;
   }
   
-  if (payload.class_assigned) {
-    const isDuplicate = getTeachers().some(t => 
-      t.class_assigned === payload.class_assigned && 
-      t.section_assigned === payload.section_assigned && 
-      String(t.id) !== String(id)
-    );
-    if (isDuplicate) {
-      toast(`Class ${payload.class_assigned} Section ${payload.section_assigned || ''} already has an assigned teacher.`, 'bad');
-      return;
-    }
-  }
   try{
     if(id){
       await api(`/auth/users/${id}`,{method:'PATCH',body:JSON.stringify({full_name:payload.full_name,class_assigned:payload.class_assigned,section_assigned:payload.section_assigned})});
     } else {
       await api('/auth/users',{method:'POST',body:JSON.stringify(payload)});
     }
-    closeModal('teacherModal'); await loadData(); render(); toast('Teacher saved successfully.');
+    closeModal('teacherModal'); await loadData(); await render(); toast('Teacher saved successfully.');
   } catch(e){ toast(e.message,'bad'); }
 }
 async function deleteTeacher(id){
