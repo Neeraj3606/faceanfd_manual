@@ -1822,7 +1822,7 @@ let adminAiChatMsgs = [];
 function renderAI(c) {
   c.innerHTML = `<div class="page">
     <div id="adminAiStatusBar" style="display:none;margin-bottom:16px;padding:10px 16px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;background:rgba(201,42,42,0.1);border:1px solid rgba(201,42,42,0.3);color:var(--danger);">
-      ⚠️ <span id="adminAiStatusMsg">AI Insights not configured. Add GROK_API_KEY to .env and restart the server.</span>
+      ⚠️ <span id="adminAiStatusMsg">AI Insights not configured. Add GEMINI_API_KEY to .env and restart the server.</span>
     </div>
 
     <div class="card" style="margin-bottom:18px;">
@@ -1946,7 +1946,7 @@ async function loadAdminAIInsights() {
     if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 
     if (!d.ok || !d.configured) {
-      content.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>${d.message || 'Configure GROK_API_KEY in .env'}</div>`;
+      content.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>${d.message || 'Configure GEMINI_API_KEY in .env'}</div>`;
       return;
     }
 

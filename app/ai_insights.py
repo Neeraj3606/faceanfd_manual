@@ -1,5 +1,5 @@
 """
-AI Insights Module — Grok-powered attendance analysis bot.
+AI Insights Module — Gemini-powered attendance analysis bot.
 
 Provides:
   - build_teacher_context()  → attendance summary for a teacher's class
@@ -11,7 +11,6 @@ Provides:
 from __future__ import annotations
 
 import os
-import requests
 from datetime import date, timedelta
 from typing import Any, Dict, List, Optional
 
@@ -21,17 +20,21 @@ from app.models import Attendance, Student, User
 from app.auth import user_role, user_school
 
 # ─────────────────────────────────────────────────────────────────
-# AI Client Initialisation (Grok)
+# AI Client Initialisation (Gemini)
 # ─────────────────────────────────────────────────────────────────
 
-def grok_available() -> bool:
-    """Return True when a valid Grok API key is configured."""
-    return bool(os.getenv("GROK_API_KEY", "").strip())
+def gemini_available() -> bool:
+    """Return True when a valid Gemini API key is configured."""
+    return bool(os.getenv("GEMINI_API_KEY", "").strip())
+
+
+# Backward-compatible alias so routes.py doesn't need changes
+grok_available = gemini_available
 
 
 def ai_model_name() -> str:
     """Return the name of the active AI model."""
-    return f"Grok ({os.getenv('GROK_MODEL', 'grok-2').strip()})"
+    return f"Gemini ({os.getenv('GEMINI_MODEL', 'gemini-1.5-flash').strip()})"
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -290,35 +293,32 @@ def _context_to_text(ctx: Dict[str, Any]) -> str:
     return json.dumps(ctx, indent=2, default=str)
 
 
-def _call_grok(system_prompt: str, user_prompt: str) -> str:
-    grok_key = os.getenv("GROK_API_KEY", "").strip()
-    if not grok_key:
-        return "⚠️ AI Insights is not configured. Please add your GROK_API_KEY to the .env file and restart the server."
-    
-    # Use Grok (xAI API)
-    model = os.getenv("GROK_MODEL", "grok-2").strip()
-    url = "https://api.x.ai/v1/chat/completions"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {grok_key}"
-    }
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        "temperature": 0.3
-    }
+def _call_gemini(system_prompt: str, user_prompt: str) -> str:
+    """Call the Google Gemini API and return the response text."""
+    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if not gemini_key:
+        return "⚠️ AI Insights is not configured. Please add your GEMINI_API_KEY to the .env file and restart the server."
+
+    model = os.getenv("GEMINI_MODEL", "gemini-1.5-flash").strip()
+
     try:
-        response = requests.post(url, json=payload, headers=headers, timeout=30)
-        if response.status_code == 200:
-            data = response.json()
-            return data["choices"][0]["message"]["content"].strip()
-        else:
-            return f"⚠️ Grok API error (Status {response.status_code}): {response.text}"
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=gemini_key)
+
+        response = client.models.generate_content(
+            model=model,
+            contents=user_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature=0.3,
+            ),
+        )
+        return response.text.strip()
+
     except Exception as e:
-        return f"⚠️ Grok connection error: {str(e)}"
+        return f"⚠️ Gemini API error: {str(e)}"
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -349,7 +349,7 @@ def generate_insights(db: Session, current_user: User) -> Dict[str, Any]:
     else:
         return {"ok": False, "message": "Unsupported role for AI insights."}
 
-    insight_text = _call_grok(system, user_msg)
+    insight_text = _call_gemini(system, user_msg)
 
     return {
         "ok": True,
@@ -393,7 +393,7 @@ def answer_question(db: Session, current_user: User, question: str) -> Dict[str,
     else:
         return {"ok": False, "message": "Unsupported role."}
 
-    answer_text = _call_grok(system, user_msg)
+    answer_text = _call_gemini(system, user_msg)
 
     return {
         "ok": True,
