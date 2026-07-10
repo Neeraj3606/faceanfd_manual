@@ -929,7 +929,7 @@ canvas{display:none;}
               <span style="width:32px;height:32px;background:linear-gradient(135deg,#1a56db,#7c3aed);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:14px;"><i class="fas fa-wand-magic-sparkles"></i></span>
               AI Class Analysis
             </div>
-            <div class="card-sub">Auto-generated insights for your class — powered by Grok AI</div>
+            <div class="card-sub">Auto-generated insights for your class — powered by Gemini AI</div>
           </div>
           <div class="card-actions">
             <button class="btn sm" onclick="loadAIInsights()" id="aiRefreshBtn">
@@ -942,7 +942,7 @@ canvas{display:none;}
             <div class="ai-thinking-dots">
               <span></span><span></span><span></span>
             </div>
-            <span class="ai-thinking-text">Grok is analyzing your class data...</span>
+            <span class="ai-thinking-text">Gemini is analyzing your class data...</span>
           </div>
           <div id="aiInsightContent">
             <div class="empty"><i class="fas fa-robot"></i><p>Click Refresh to generate AI insights for your class</p></div>
@@ -1667,7 +1667,7 @@ const tabMeta = {
   face:{title:'Face Attendance',sub:'Live face recognition attendance',chip:'Live'},
   manual:{title:'Manual Attendance',sub:'Mark attendance for each student',chip:'Manual'},
   reports:{title:'Reports & Export',sub:'Download attendance reports',chip:'Reports'},
-  ai:{title:'AI Insights',sub:'Grok-powered attendance intelligence',chip:'AI ✨'}
+  ai:{title:'AI Insights',sub:'Gemini-powered attendance intelligence',chip:'AI ✨'}
 };
 
 function goTab(tab){
@@ -1856,7 +1856,7 @@ function renderChatBubble(text, role) {
   div.className = `ai-chat-msg ${role}`;
   const label = document.createElement('div');
   label.className = 'ai-chat-label';
-  label.textContent = role === 'user' ? '🧑 You' : '🤖 Grok';
+  label.textContent = role === 'user' ? '🧑 You' : '🤖 Gemini';
   const bubble = document.createElement('div');
   bubble.className = 'ai-chat-bubble';
   // Strip markdown bold/headers
@@ -1883,7 +1883,7 @@ async function sendAIChat() {
   const wrap = document.getElementById('aiChatHistory');
   const thinkDiv = document.createElement('div');
   thinkDiv.className = 'ai-chat-msg bot';
-  thinkDiv.innerHTML = `<div class="ai-chat-label">🤖 Grok</div><div class="ai-chat-bubble" style="display:flex;align-items:center;gap:8px;"><div class="ai-thinking-dots"><span></span><span></span><span></span></div><span style="font-size:12px;color:var(--blue-600);font-family:\'JetBrains Mono\',monospace;">Thinking...</span></div>`;
+  thinkDiv.innerHTML = `<div class="ai-chat-label">🤖 Gemini</div><div class="ai-chat-bubble" style="display:flex;align-items:center;gap:8px;"><div class="ai-thinking-dots"><span></span><span></span><span></span></div><span style="font-size:12px;color:var(--blue-600);font-family:\'JetBrains Mono\',monospace;">Thinking...</span></div>`;
   wrap.appendChild(thinkDiv);
   wrap.scrollTop = wrap.scrollHeight;
 
