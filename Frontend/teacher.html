@@ -915,11 +915,6 @@ canvas{display:none;}
     ══════════════════════════════════════════ -->
     <div class="section" id="aiSection">
 
-      <!-- Status bar -->
-      <div id="aiStatusBar" style="display:none;margin-bottom:16px;padding:10px 16px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);color:#dc2626;">
-        <i class="fas fa-triangle-exclamation"></i>
-        <span id="aiStatusMsg">AI Insights is not configured. Add your GEMINI_API_KEY to .env</span>
-      </div>
 
       <!-- Auto Insights Card -->
       <div class="card" style="margin-bottom:18px;">
@@ -1786,13 +1781,8 @@ async function checkAIStatus() {
   try {
     const r = await fetch(`${API}/ai/status`, { headers: { Authorization: `Bearer ${token}` } });
     const d = await r.json();
-    const bar = document.getElementById('aiStatusBar');
     const badge = document.getElementById('aiNavBadge');
-    if (!d.configured) {
-      bar.style.display = 'flex';
-      document.getElementById('aiStatusMsg').textContent = '⚠️ AI Insights not configured. Add GEMINI_API_KEY to .env and restart the server.';
-    } else {
-      bar.style.display = 'none';
+    if (d.configured) {
       if (badge) badge.style.display = 'inline-block';
     }
     return d.configured;

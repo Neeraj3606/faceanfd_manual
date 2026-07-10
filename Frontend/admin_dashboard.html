@@ -1821,9 +1821,6 @@ let adminAiChatMsgs = [];
 
 function renderAI(c) {
   c.innerHTML = `<div class="page">
-    <div id="adminAiStatusBar" style="display:none;margin-bottom:16px;padding:10px 16px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;background:rgba(201,42,42,0.1);border:1px solid rgba(201,42,42,0.3);color:var(--danger);">
-      ⚠️ <span id="adminAiStatusMsg">AI Insights not configured. Add GEMINI_API_KEY to .env and restart the server.</span>
-    </div>
 
     <div class="card" style="margin-bottom:18px;">
       <div class="card-head" style="background:linear-gradient(135deg,rgba(21,71,192,0.08),rgba(124,58,237,0.06));">
@@ -1913,15 +1910,9 @@ async function checkAdminAIStatus() {
   try {
     const r = await fetch(`${API}/ai/status`, { headers: { Authorization: `Bearer ${TOKEN}` } });
     const d = await r.json();
-    const bar = document.getElementById('adminAiStatusBar');
     const badge = document.getElementById('adminAiNavBadge');
-    if (bar) {
-      if (!d.configured) {
-        bar.style.display = 'flex';
-      } else {
-        bar.style.display = 'none';
-        if (badge) badge.style.display = 'inline-block';
-      }
+    if (d.configured) {
+      if (badge) badge.style.display = 'inline-block';
     }
     return d.configured;
   } catch(e) { return false; }
